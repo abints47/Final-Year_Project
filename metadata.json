@@ -1,0 +1,8 @@
+{
+  "name": "Techyarjun - AI Learning Environment",
+  "description": "Premium educational platform leveraging Gemini 3 Pro for real-time creativity and intelligent mentorship.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
