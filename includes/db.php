@@ -3,8 +3,18 @@
 
 $host = 'localhost';
 $dbname = 'login';
+
+/** 
+ * SECURITY NOTE: 
+ * - 'root' allows all operations (SIGNUP, LOGIN, etc.)
+ * - 'public_viewer' is for READ-ONLY mode (Secures your data from deletion)
+ */
 $username = 'root';
-$password = ''; // Default XAMPP password is empty
+$password = '';
+
+// Read-Only mode (Uncomment to enable)
+// $username = 'public_viewer'; 
+// $password = 'password123';
 
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $username, $password);
