@@ -2,19 +2,16 @@
 <img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
 </div>
 
-# Run and deploy your AI Studio app
+# Techyarjun AI Learning Platform
 
-This contains everything you need to run your app locally.
-
-View your app in AI Studio: https://ai.studio/apps/temp/1
+This is the Final Year Project repository for the Techyarjun AI Learning Platform.
 
 ## Run Locally
 
-**Prerequisites:**  Node.js
+**Prerequisites:** PHP, MySQL (XAMPP recommended)
 
-
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+1. Clone the repository.
+2. Place it in your `htdocs` folder.
+3. Import the database (if provided).
+4. Start Apache and MySQL from XAMPP.
+5. Visit `http://localhost/techyarjun-ai-learning-platform (1)/index.php`.
