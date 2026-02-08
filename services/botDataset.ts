@@ -10,7 +10,7 @@ export const botDataset: DatasetEntry[] = [
     },
     {
         keywords: ["certificate", "certification", "degree", "diploma"],
-        answer: "Yes! Upon successful completion of any course on Techyarjun, you will receive a digital certificate that you can add to your LinkedIn profile or resume."
+        answer: "Yes! Upon successful completion of any course on Openly, you will receive a digital certificate that you can add to your LinkedIn profile or resume."
     },
     {
         keywords: ["price", "cost", "free", "payment", "money"],
@@ -21,12 +21,12 @@ export const botDataset: DatasetEntry[] = [
         answer: "You can create an account by clicking the 'Sign Up' button in the navigation bar. If you already have an account, just use the 'Login' option."
     },
     {
-        keywords: ["who are you", "what is techyarjun", "about", "creator"],
-        answer: "Techyarjun is an AI-powered learning platform designed to help students and professionals master modern tech skills through hands-on projects and expert-led content."
+        keywords: ["who are you", "what is techyarjun", "what is openly", "about", "creator"],
+        answer: "Openly is an AI-powered learning platform designed to help students and professionals master modern tech skills through hands-on projects and expert-led content."
     },
     {
         keywords: ["contact", "support", "help", "email", "reach out"],
-        answer: "You can reach our support team via the Contact page or email us directly at support@techyarjun.com. We're here to help!"
+        answer: "You can reach our support team via the Contact page or email us directly at support@openly.com. We're here to help!"
     },
     {
         keywords: ["react", "frontend", "framework"],

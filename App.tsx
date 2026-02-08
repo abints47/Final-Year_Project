@@ -10,9 +10,9 @@ const App: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#020617] text-slate-50 relative selection:bg-indigo-500/30">
       <div className="fixed top-0 left-0 w-full h-[500px] bg-indigo-600/10 blur-[120px] rounded-full pointer-events-none -translate-y-1/2"></div>
-      
+
       <Navbar />
-      
+
       <main className="relative pt-20">
         <Hero />
         <Features />
@@ -29,7 +29,7 @@ const App: React.FC = () => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
               </div>
-              <span className="text-xl font-bold tracking-tight text-white">Techyarjun</span>
+              <span className="text-xl font-bold tracking-tight text-white">Openly</span>
             </div>
             <div className="flex flex-wrap justify-center gap-x-8 gap-y-4 text-sm font-medium text-slate-400">
               <a href="#" className="hover:text-white transition-colors">Privacy</a>
@@ -37,7 +37,7 @@ const App: React.FC = () => {
               <a href="#" className="hover:text-white transition-colors">Contact</a>
             </div>
             <p className="text-slate-600 text-xs mt-4">
-              &copy; {new Date().getFullYear()} Techyarjun. Built for the modern engineer.
+              &copy; {new Date().getFullYear()} Openly. Built for the modern engineer.
             </p>
           </div>
         </div>

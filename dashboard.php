@@ -6,16 +6,8 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
-$courses = [
-    ['id' => '1', 'title' => 'HTML Foundations', 'category' => 'Web Dev', 'level' => 'Beginner', 'duration' => '6h', 'yt_id' => 'ok-plXXHlWw', 'image' => 'https://images.unsplash.com/photo-1542831371-29b0f74f9713?auto=format&fit=crop&q=80&w=800', 'desc' => 'Master the skeletal structure of the web. Learn semantic tagging and SEO essentials.'],
-    ['id' => '2', 'title' => 'Modern CSS & Layouts', 'category' => 'Design', 'level' => 'Beginner', 'duration' => '10h', 'yt_id' => '1Rs2ND1RYYc', 'image' => 'https://images.unsplash.com/photo-1523437113738-bbd3cc89fb19?auto=format&fit=crop&q=80&w=800', 'desc' => 'Dive deep into Flexbox, Grid, and Animations to create stunning, responsive interfaces.'],
-    ['id' => '3', 'title' => 'JavaScript Mastery', 'category' => 'Code', 'level' => 'Medium', 'duration' => '25h', 'yt_id' => 'W6NZfCO5SIk', 'image' => 'https://images.unsplash.com/photo-1579468118864-1b9ea3c0db4a?auto=format&fit=crop&q=80&w=800', 'desc' => 'Build real interactivity and master browser logic from ES6 to Async.'],
-    ['id' => '4', 'title' => 'React 19 Framework', 'category' => 'Frontend', 'level' => 'Advanced', 'duration' => '30h', 'yt_id' => 'SqcY0GlvtPk', 'image' => 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?auto=format&fit=crop&q=80&w=800', 'desc' => 'Master component architecture and the latest Server Components features.'],
-    ['id' => '5', 'title' => 'C Programming', 'category' => 'Systems', 'level' => 'Hard', 'duration' => '40h', 'yt_id' => 'KJgsSFOSQv0', 'image' => 'https://images.unsplash.com/photo-1515879218367-8466d910aaa4?auto=format&fit=crop&q=80&w=800', 'desc' => 'Understand memory, pointers, and the foundation of all computing power.'],
-    ['id' => '6', 'title' => 'Java Enterprise', 'category' => 'Backend', 'level' => 'Medium', 'duration' => '35h', 'yt_id' => 'grEKMHGYyns', 'image' => 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&q=80&w=800', 'desc' => 'Master OOP principles and build robust, scalable server-side applications.'],
-    ['id' => '7', 'title' => 'Go Microservices', 'category' => 'Backend', 'level' => 'Medium', 'duration' => '20h', 'yt_id' => 'YS4e4q9oBaU', 'image' => 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&q=80&w=800', 'desc' => 'High-performance cloud infrastructure with Go concurrency patterns.'],
-    ['id' => '8', 'title' => 'MongoDB & NoSQL', 'category' => 'Data', 'level' => 'Medium', 'duration' => '15h', 'yt_id' => 'vE0Z9pL0Wos', 'image' => 'https://images.unsplash.com/photo-1544383835-bda2bc66a55d?auto=format&fit=crop&q=80&w=800', 'desc' => 'Flexible data modeling with document databases and aggregation.'],
-];
+require_once 'includes/db.php';
+require_once 'includes/courses_data.php';
 ?>
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth">
@@ -23,7 +15,7 @@ $courses = [
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Techyarjun</title>
+    <title>Dashboard - Openly</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
         rel="stylesheet">
@@ -214,8 +206,12 @@ $courses = [
         <div class="flex flex-col md:flex-row justify-between items-end mb-16 animate-in" style="animation-delay: 0.1s">
             <div>
                 <span class="text-xs font-bold text-cyan-400 uppercase tracking-widest mb-2 block">Overview</span>
-                <h1 class="text-4xl md:text-5xl font-black text-white tracking-tight">My <span
-                        class="gradient-cyan">Dashboard</span></h1>
+                <h1 class="text-4xl md:text-6xl font-black text-white tracking-tight">
+                    Welcome back, <span class="gradient-cyan">
+                        <?php echo htmlspecialchars(explode(' ', $_SESSION['user_name'])[0]); ?>!
+                    </span>
+                </h1>
+                <p class="text-slate-400 mt-2 font-medium">Continue your learning journey</p>
             </div>
             <div class="mt-6 md:mt-0 glass px-6 py-4 rounded-2xl flex items-center gap-4">
                 <div class="w-10 h-10 bg-green-500/10 rounded-full flex items-center justify-center text-green-400">
@@ -377,21 +373,22 @@ $courses = [
                     <p class="feature-description">Monitor your learning journey in real-time</p>
                 </div>
             </div>
-        </section>        <!-- Course Grid -->
+        </section> <!-- Course Grid -->
         <div class="mb-12 animate-in pt-10 pb-20" style="animation-delay: 0.7s">
             <h2 class="text-2xl font-bold text-white mb-8 flex items-center gap-3">
                 <span class="w-2 h-8 bg-cyan-500 rounded-full"></span>
                 Active Courses
             </h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <?php foreach ($courses as $index => $course):
+                <?php foreach ($all_courses as $index => $course):
                     $badgeColor = 'bg-emerald-500';
-                    if ($course['level'] == 'Medium')
+                    if ($course['level'] == 'Intermediate' || $course['level'] == 'Medium')
                         $badgeColor = 'bg-amber-500';
-                    if ($course['level'] == 'Hard')
+                    if ($course['level'] == 'Advanced' || $course['level'] == 'Hard')
                         $badgeColor = 'bg-rose-500';
                     ?>
-                    <div class="course-card bg-[#0f172a] border border-white/5 rounded-[2rem] overflow-hidden flex flex-col h-full animate-in group"
+                    <a href="course_detail.php?id=<?php echo $course['id']; ?>"
+                        class="course-card bg-[#0f172a] border border-white/5 rounded-[2rem] overflow-hidden flex flex-col h-full animate-in group"
                         style="animation-delay: <?php echo $index * 0.05; ?>s">
                         <div class="h-44 relative overflow-hidden">
                             <img src="<?php echo $course['image']; ?>" alt="<?php echo $course['title']; ?>"
@@ -412,7 +409,7 @@ $courses = [
                                 <?php echo $course['title']; ?>
                             </h3>
                             <p class="text-slate-400 text-xs mb-6 flex-1 leading-relaxed line-clamp-3">
-                                <?php echo $course['desc']; ?>
+                                <?php echo $course['summary']; ?>
                             </p>
 
                             <div
@@ -428,13 +425,13 @@ $courses = [
                             </div>
 
                             <div class="flex gap-2">
-                                <a href="https://www.youtube.com/watch?v=<?php echo $course['yt_id']; ?>" target="_blank"
+                                <span
                                     class="flex-1 gradient-btn text-white py-3 rounded-xl font-bold text-center text-xs transition-all hover:opacity-90 active:scale-95 shadow-lg shadow-cyan-500/20">
                                     Start Learning
-                                </a>
+                                </span>
                             </div>
                         </div>
-                    </div>
+                    </a>
                 <?php endforeach; ?>
             </div>
         </div>

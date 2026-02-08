@@ -20,16 +20,16 @@ const getAI = () => new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
 export const generateAIImage = async (prompt: string, size: ImageSize): Promise<string> => {
   await checkAndRequestKey();
   const ai = getAI();
-  
+
   try {
     const response = await ai.models.generateContent({
       model: 'gemini-3-pro-image-preview', // High quality as requested
       contents: { parts: [{ text: prompt }] },
-      config: { 
-        imageConfig: { 
-          aspectRatio: "1:1", 
-          imageSize: size 
-        } 
+      config: {
+        imageConfig: {
+          aspectRatio: "1:1",
+          imageSize: size
+        }
       }
     });
 
@@ -37,11 +37,11 @@ export const generateAIImage = async (prompt: string, size: ImageSize): Promise<
     if (part?.inlineData) {
       return `data:image/png;base64,${part.inlineData.data}`;
     }
-    
+
     // Fallback search for any text if image failed
     const textPart = response.candidates?.[0]?.content?.parts?.find(p => p.text);
     if (textPart) throw new Error(`Model responded: ${textPart.text}`);
-    
+
     throw new Error("No image data returned from Gemini.");
   } catch (error: any) {
     if (error.message?.includes("Requested entity was not found")) {
@@ -56,11 +56,11 @@ export const startAIChat = async (history: { role: 'user' | 'model'; text: strin
   const ai = getAI();
   const chat = ai.chats.create({
     model: 'gemini-3-pro-preview',
-    config: { 
-      systemInstruction: "You are Techyarjun AI, a sophisticated learning mentor. You provide deep insights into engineering, coding, and AI. Keep responses professional, helpful, and concise." 
+    config: {
+      systemInstruction: "You are Openly AI, a sophisticated learning mentor. You provide deep insights into engineering, coding, and AI. Keep responses professional, helpful, and concise."
     }
   });
-  
+
   // Note: Simple sendMessage handles history internally if we used the same session, 
   // but for a fresh call with history we should technically pass it to create() 
   // but standard sendMessage works for the immediate turn.

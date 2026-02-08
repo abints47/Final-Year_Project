@@ -41,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Techyarjun - The Future of Learning</title>
+    <title>Openly - The Future of Learning</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
         rel="stylesheet">
@@ -101,8 +101,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body class="min-h-screen flex flex-col overflow-x-hidden selection:bg-indigo-500/30 bg-[#020617]">
     <!-- Background Decor (Clipped) -->
     <div class="fixed inset-0 overflow-hidden pointer-events-none z-0">
-        <div class="aura bg-cyan-600 w-[500px] h-[500px] top-0 left-0 -translate-x-1/2 -translate-y-1/2 opacity-20"></div>
-        <div class="aura bg-purple-600 w-[500px] h-[500px] bottom-0 right-0 translate-x-1/2 translate-y-1/2 opacity-20"></div>
+        <div class="aura bg-cyan-600 w-[500px] h-[500px] top-0 left-0 -translate-x-1/2 -translate-y-1/2 opacity-20">
+        </div>
+        <div class="aura bg-purple-600 w-[500px] h-[500px] bottom-0 right-0 translate-x-1/2 translate-y-1/2 opacity-20">
+        </div>
     </div>
 
     <?php include 'components/navbar.php'; ?>

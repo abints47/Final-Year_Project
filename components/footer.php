@@ -7,7 +7,7 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M13 10V3L4 14h7v7l9-11h-7z" />
         </svg>
       </div>
-      <span class="text-lg font-bold text-white">Techyarjun</span>
+      <span class="text-lg font-bold text-white">Openly</span>
     </div>
 
     <div class="flex justify-center gap-8 mb-8 text-sm font-medium text-slate-500">
@@ -17,7 +17,7 @@
     </div>
 
     <p class="text-slate-600 text-xs">
-      &copy; <?php echo date("Y"); ?> Techyarjun Inc. All rights reserved.
+      &copy; <?php echo date("Y"); ?> Openly Inc. All rights reserved.
     </p>
   </div>
 </footer>

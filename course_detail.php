@@ -1,5 +1,9 @@
 <?php
 session_start();
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit();
+}
 require_once 'includes/db.php';
 require_once 'includes/courses_data.php';
 
@@ -27,9 +31,7 @@ if (!$course) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>
-        <?php echo htmlspecialchars($course['title']); ?> - ArjunTechy
-    </title>
+    <title><?php echo htmlspecialchars($course['title']); ?> - Openly</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
         rel="stylesheet">
@@ -226,7 +228,7 @@ if (!$course) {
                 <div class="space-y-4">
                     <button
                         class="w-full py-4 bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold rounded-2xl shadow-lg shadow-cyan-500/25 hover:scale-[1.02] active:scale-[0.98] transition-all">
-                        Enroll Now
+                        Watch Now
                     </button>
                     <button
                         class="w-full py-4 glass text-white font-bold rounded-2xl hover:bg-white/5 transition-all flex items-center justify-center gap-2">

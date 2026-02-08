@@ -38,7 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Techyarjun</title>
+    <title>Login - Openly</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
         rel="stylesheet">
@@ -86,8 +86,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </svg>
                 </div>
                 <span class="text-2xl font-bold tracking-tight">
-                    <span class="text-white">Arjun</span><span
-                        class="bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">Techy</span>
+                    <span class="text-white">Open</span><span
+                        class="bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">ly</span>
                 </span>
             </div>
         </div>

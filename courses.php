@@ -1,5 +1,9 @@
 <?php
 session_start();
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit();
+}
 require_once 'includes/db.php';
 require_once 'includes/courses_data.php';
 
@@ -21,7 +25,7 @@ $filtered_courses = array_filter($all_courses, function ($course) use ($search, 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Explore Courses - ArjunTechy</title>
+    <title>Explore Courses - Openly</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
         rel="stylesheet">
@@ -121,6 +125,14 @@ $filtered_courses = array_filter($all_courses, function ($course) use ($search, 
                         </option>
                         <option value="AI/ML" <?php echo $category === 'AI/ML' ? 'selected' : ''; ?>>AI & Machine
                             Learning</option>
+                        <option value="Security" <?php echo $category === 'Security' ? 'selected' : ''; ?>>Cyber Security
+                        </option>
+                        <option value="Cloud" <?php echo $category === 'Cloud' ? 'selected' : ''; ?>>Cloud Computing
+                        </option>
+                        <option value="Data Science" <?php echo $category === 'Data Science' ? 'selected' : ''; ?>>Data
+                            Science</option>
+                        <option value="Mobile Dev" <?php echo $category === 'Mobile Dev' ? 'selected' : ''; ?>>Mobile
+                            Development</option>
                     </select>
                 </div>
 

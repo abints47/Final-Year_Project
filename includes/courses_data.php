@@ -116,7 +116,7 @@ $all_courses = [
         'students' => '18,700',
         'duration' => '55 hours',
         'lessons' => '200',
-        'image' => 'https://images.unsplash.com/photo-1555255707-c07966488bc0?auto=format&fit=crop&q=80&w=800',
+        'image' => 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&q=80&w=800',
         'youtube_id' => '7eh4d6sabA0', // Sentdex Machine Learning
         'summary' => 'Journey into the world of AI. Learn supervised, unsupervised, and deep learning with Python and scikit-learn.',
         'full_summary' => 'This course is a deep dive into the mathematical and practical aspects of Machine Learning. You will master algorithms like Linear Regression, Random Forests, and Neural Networks. The course provides clear explanations and hands-on coding templates.',
@@ -156,6 +156,136 @@ $all_courses = [
         'resources' => [
             ['name' => 'React 19 Release Notes', 'url' => 'https://react.dev/blog/2024/04/25/react-19'],
             ['name' => 'React Dev Docs', 'url' => 'https://react.dev/']
+        ]
+    ],
+    [
+        'id' => '7',
+        'title' => 'Generative AI & LLMs',
+        'author' => 'Dr. Michael Watts',
+        'category' => 'AI/ML',
+        'level' => 'Advanced',
+        'rating' => '4.9',
+        'students' => '8,200',
+        'duration' => '35 hours',
+        'lessons' => '110',
+        'image' => 'https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&q=80&w=800',
+        'youtube_id' => '5Sgco7yS-zE', // Generative AI overview
+        'summary' => 'Master the future of AI. Learn prompt engineering, fine-tuning LLMs, and building applications with GPT-4 and LangChain.',
+        'full_summary' => 'Generative AI is transforming industries. This course provides a deep dive into Large Language Models, from their transformer architecture to practical deployment. You will learn how to build AI-powered applications using modern frameworks like LangChain and LlamaIndex.',
+        'what_you_learn' => [
+            'Transformer Architecture and Attention Mechanisms',
+            'Prompt Engineering and Vector Databases',
+            'Fine-tuning LLMs for specific domains',
+            'Building RAG (Retrieval-Augmented Generation) systems',
+            'Ethical AI and Bias Mitigation'
+        ],
+        'resources' => [
+            ['name' => 'OpenAI Documentation', 'url' => 'https://platform.openai.com/docs/'],
+            ['name' => 'Hugging Face Course', 'url' => 'https://huggingface.co/learn/nlp-course/']
+        ]
+    ],
+    [
+        'id' => '8',
+        'title' => 'Cyber Security Professional',
+        'author' => 'Alex Rivera',
+        'category' => 'Security',
+        'level' => 'Intermediate',
+        'rating' => '4.8',
+        'students' => '14,150',
+        'duration' => '50 hours',
+        'lessons' => '140',
+        'image' => 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=800',
+        'youtube_id' => 'nzj7Wg4DAbs', // Cyber Security for beginners
+        'summary' => 'Protect digital assets. Learn ethical hacking, network security, cryptography, and threat intelligence to become a security expert.',
+        'full_summary' => 'This comprehensive security course covers the entire landscape of modern cybersecurity. You will learn defensive and offensive strategies, security auditing, and how to build resilient systems against evolving threats like ransomware and zero-day exploits.',
+        'what_you_learn' => [
+            'Ethical Hacking and Penetration Testing',
+            'Network Security and Firewall Configuration',
+            'Advanced Cryptography and Data Protection',
+            'Identity and Access Management (IAM)',
+            'Incident Response and Disaster Recovery'
+        ],
+        'resources' => [
+            ['name' => 'OWASP Top 10', 'url' => 'https://owasp.org/www-project-top-ten/'],
+            ['name' => 'NIST Cybersecurity Framework', 'url' => 'https://www.nist.gov/cyberframework']
+        ]
+    ],
+    [
+        'id' => '9',
+        'title' => 'AWS Cloud Solutions Architect',
+        'author' => 'Sarah Chen',
+        'category' => 'Cloud',
+        'level' => 'Intermediate',
+        'rating' => '4.7',
+        'students' => '22,400',
+        'duration' => '45 hours',
+        'lessons' => '130',
+        'image' => 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=800',
+        'youtube_id' => 'RrKRN9zrbKo', // AWS Certified Solutions Architect
+        'summary' => 'Master the world\'s leading cloud platform. Learn to design scalable, reliable, and cost-effective systems on Amazon Web Services.',
+        'full_summary' => 'Cloud computing is the backbone of modern business. This course prepares you for the AWS Certified Solutions Architect Associate exam by teaching you how to architect complex solutions using EC2, S3, RDS, Lambda, and more.',
+        'what_you_learn' => [
+            'Designing High Availability Architectures',
+            'Cost Optimization and Performance Scaling',
+            'AWS Serverless Computing (Lambda & API Gateway)',
+            'Identity and Access Management in the Cloud',
+            'Data Storage and Database selection strategies'
+        ],
+        'resources' => [
+            ['name' => 'AWS Documentation', 'url' => 'https://docs.aws.amazon.com/'],
+            ['name' => 'Cloud Architect Learning Path', 'url' => 'https://aws.amazon.com/training/learning-paths/']
+        ]
+    ],
+    [
+        'id' => '10',
+        'title' => 'Data Analytics with Python',
+        'author' => 'Vikram Reddy',
+        'category' => 'Data Science',
+        'level' => 'Intermediate',
+        'rating' => '4.8',
+        'students' => '11,200',
+        'duration' => '38 hours',
+        'lessons' => '115',
+        'image' => 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=800',
+        'youtube_id' => 'GPVsHOlRBBI', // Data Analysis with Python
+        'summary' => 'Turn data into insights. Master Pandas, NumPy, Matplotlib, and Seaborn to perform complex data analysis and visualization.',
+        'full_summary' => 'Data is the new oil. This course teaches you how to clean, manipulate, and visualize large datasets using the Python ecosystem. You will work on real-world datasets to uncover trends and build predictive models.',
+        'what_you_learn' => [
+            'Data Cleaning and Preprocessing with Pandas',
+            'Numerical Computing with NumPy',
+            'Advanced Data Visualization with Matplotlib & Seaborn',
+            'Exploratory Data Analysis (EDA) techniques',
+            'Statistical Analysis and Hypothesis Testing'
+        ],
+        'resources' => [
+            ['name' => 'Pandas Documentation', 'url' => 'https://pandas.pydata.org/docs/'],
+            ['name' => 'Kaggle Datasets', 'url' => 'https://www.kaggle.com/datasets']
+        ]
+    ],
+    [
+        'id' => '11',
+        'title' => 'Flutter Mobile Development',
+        'author' => 'Priya Sharma',
+        'category' => 'Mobile Dev',
+        'level' => 'Intermediate',
+        'rating' => '4.9',
+        'students' => '19,300',
+        'duration' => '40 hours',
+        'lessons' => '125',
+        'image' => 'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?auto=format&fit=crop&q=80&w=800',
+        'youtube_id' => 'VPvVD8t0208', // Flutter for beginners
+        'summary' => 'Build beautiful cross-platform apps with a single codebase. Master Dart and Flutter to deploy on iOS, Android, and Web.',
+        'full_summary' => 'Flutter is revolutionizing mobile app development. This course takes you from the basics of the Dart language to building high-performance, beautiful applications that run natively on multiple platforms.',
+        'what_you_learn' => [
+            'Dart Programming Language Fundamentals',
+            'Building Responsive UIs with Flutter Widgets',
+            'State Management techniques (Provider, Riverpod)',
+            'Connecting to REST APIs and Firebase integration',
+            'App Store and Play Store Deployment processes'
+        ],
+        'resources' => [
+            ['name' => 'Flutter Documentation', 'url' => 'https://docs.flutter.dev/'],
+            ['name' => 'Dart.dev Guides', 'url' => 'https://dart.dev/guides']
         ]
     ],
 ];

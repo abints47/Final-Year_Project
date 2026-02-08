@@ -30,7 +30,8 @@
             </button>
         </div>
 
-        <div id="chat-messages" class="flex-1 overflow-y-auto p-6 space-y-4 bg-[#020617]/50 scroll-smooth scrollbar-none">
+        <div id="chat-messages"
+            class="flex-1 overflow-y-auto p-6 space-y-4 bg-[#020617]/50 scroll-smooth scrollbar-none">
             <div class="flex justify-start">
                 <div
                     class="max-w-[85%] p-4 rounded-2xl text-sm leading-relaxed bg-[#1e293b] border border-white/5 text-slate-200 rounded-tl-none shadow-sm">
@@ -105,11 +106,11 @@
 <script>
     const botDataset = [
         { keywords: ["course", "courses", "learn", "teach", "what do you offer"], answer: "We offer a wide range of courses including HTML Foundations, Modern CSS, JavaScript Mastery, React 19, C Programming, Java Enterprise, Go Microservices, and MongoDB. You can find them all on our Courses page!" },
-        { keywords: ["certificate", "certification", "degree", "diploma"], answer: "Yes! Upon successful completion of any course on Techyarjun, you will receive a digital certificate that you can add to your LinkedIn profile or resume." },
+        { keywords: ["certificate", "certification", "degree", "diploma"], answer: "Yes! Upon successful completion of any course on Openly, you will receive a digital certificate that you can add to your LinkedIn profile or resume." },
         { keywords: ["price", "cost", "free", "payment", "money"], answer: "Many of our introductory courses are completely free! For premium specialized tracks, we offer competitive pricing and occasional discounts for students." },
         { keywords: ["login", "signin", "account", "signup", "register"], answer: "You can create an account by clicking the 'Sign Up' button in the navigation bar. If you already have an account, just use the 'Login' option." },
-        { keywords: ["who are you", "what is techyarjun", "about", "creator"], answer: "Techyarjun is an AI-powered learning platform designed to help students and professionals master modern tech skills through hands-on projects and expert-led content." },
-        { keywords: ["contact", "support", "help", "email", "reach out"], answer: "You can reach our support team via the Contact page or email us directly at support@techyarjun.com. We're here to help!" },
+        { keywords: ["who are you", "what is techyarjun", "what is openly", "about", "creator"], answer: "Openly is an AI-powered learning platform designed to help students and professionals master modern tech skills through hands-on projects and expert-led content." },
+        { keywords: ["contact", "support", "help", "email", "reach out"], answer: "You can reach our support team via the Contact page or email us directly at support@openly.com. We're here to help!" },
         { keywords: ["react", "frontend", "framework"], answer: "Our React 19 Framework course covers everything from component architecture to the latest Server Components features. It's perfect for advanced frontend developers!" },
         { keywords: ["python", "ai", "machine learning", "ml"], answer: "We have extensive resources for Python and AI. Check out our 'Master a Language' section on the homepage for deep dives into AI-related technologies." },
         { keywords: ["java", "backend", "enterprise"], answer: "Our Java Enterprise course teaches you OOP principles and how to build robust, scalable server-side applications used by top companies." },
@@ -171,7 +172,7 @@
             // Fallback or simple AI simulate for now as we don't have direct access to Gemini service easily here without bundling
             await new Promise(r => setTimeout(r, 1500));
             removeLoading(loadingId);
-            addMessage("I am a learning assistant. I can answer questions about Techyarjun's courses, certificates, and more. For complex queries, please visit our documentation or contact support.", 'model');
+            addMessage("I am a learning assistant. I can answer questions about Openly's courses, certificates, and more. For complex queries, please visit our documentation or contact support.", 'model');
         }
     }
 

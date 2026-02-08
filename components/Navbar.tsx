@@ -12,13 +12,13 @@ const Navbar: React.FC = () => {
   return (
     <nav className={`fixed top-0 left-0 right-0 z-[50] transition-all duration-300 border-b ${scrolled ? 'bg-[#0f172a]/80 backdrop-blur-xl border-white/5 py-3' : 'bg-transparent border-transparent py-6'}`}>
       <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
-        <div className="flex items-center gap-3 cursor-pointer group" onClick={() => window.scrollTo({top: 0, behavior: 'smooth'})}>
+        <div className="flex items-center gap-3 cursor-pointer group" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
           <div className="w-9 h-9 bg-indigo-600 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110 shadow-lg shadow-indigo-600/20">
             <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M13 10V3L4 14h7v7l9-11h-7z" />
             </svg>
           </div>
-          <span className="text-xl font-bold tracking-tight text-white">Techyarjun</span>
+          <span className="text-xl font-bold tracking-tight text-white">Openly</span>
         </div>
 
         <div className="hidden md:flex items-center gap-8">
