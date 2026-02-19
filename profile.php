@@ -82,20 +82,23 @@ if (!isset($_SESSION['user_id'])) {
 
             <!-- Main Content -->
             <div class="lg:col-span-2 space-y-8">
-                <div class="glass p-10 rounded-[2.5rem] relative z-10">
+                <div class="glass p-6 md:p-10 rounded-[2.5rem] relative z-10">
                     <h3 class="text-xl font-bold text-white mb-6">Learning Statistics</h3>
-                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-6">
-                        <div class="bg-[#0f172a] p-5 rounded-2xl border border-white/5">
-                            <p class="text-slate-500 text-xs font-bold uppercase tracking-widest mb-2">XP Earned</p>
-                            <p class="text-3xl font-black text-cyan-400">0</p>
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+                        <div class="bg-[#0f172a] p-4 md:p-5 rounded-2xl border border-white/5">
+                            <p class="text-slate-500 text-[10px] md:text-xs font-bold uppercase tracking-widest mb-2">XP
+                                Earned</p>
+                            <p class="text-2xl md:text-3xl font-black text-cyan-400">0</p>
                         </div>
-                        <div class="bg-[#0f172a] p-5 rounded-2xl border border-white/5">
-                            <p class="text-slate-500 text-xs font-bold uppercase tracking-widest mb-2">Hours</p>
-                            <p class="text-3xl font-black text-cyan-400">0.0</p>
+                        <div class="bg-[#0f172a] p-4 md:p-5 rounded-2xl border border-white/5">
+                            <p class="text-slate-500 text-[10px] md:text-xs font-bold uppercase tracking-widest mb-2">
+                                Hours</p>
+                            <p class="text-2xl md:text-3xl font-black text-cyan-400">0.0</p>
                         </div>
-                        <div class="bg-[#0f172a] p-5 rounded-2xl border border-white/5">
-                            <p class="text-slate-500 text-xs font-bold uppercase tracking-widest mb-2">Certificates</p>
-                            <p class="text-3xl font-black text-cyan-400">0</p>
+                        <div class="bg-[#0f172a] p-4 md:p-5 rounded-2xl border border-white/5 col-span-2 md:col-span-1">
+                            <p class="text-slate-500 text-[10px] md:text-xs font-bold uppercase tracking-widest mb-2">
+                                Certificates</p>
+                            <p class="text-2xl md:text-3xl font-black text-cyan-400">0</p>
                         </div>
                     </div>
                 </div>

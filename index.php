@@ -122,11 +122,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </svg>
                 Transform Your Career with Expert-Led Courses
             </div>
-            <h1 class="text-6xl md:text-8xl font-black text-white mb-8 leading-[1] tracking-tight">
+            <h1 class="text-5xl md:text-8xl font-black text-white mb-8 leading-[1] tracking-tight">
                 Master <span class="gradient-cyan">Programming</span> & <br class="hidden md:block" />
                 <span class="gradient-purple">AI Skills</span>
             </h1>
-            <p class="text-lg text-slate-400 mb-10 max-w-xl mx-auto lg:mx-0 leading-relaxed">
+            <p class="text-base md:text-lg text-slate-400 mb-10 max-w-xl mx-auto lg:mx-0 leading-relaxed">
                 Join thousands of learners mastering Python, Java, Machine Learning, and cutting-edge AI technologies.
                 Learn from industry experts with hands-on projects.
             </p>

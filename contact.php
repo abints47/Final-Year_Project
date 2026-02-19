@@ -76,9 +76,10 @@ if (!isset($_SESSION['user_id'])) {
     <?php include 'components/navbar.php'; ?>
 
     <main class="flex-1 max-w-7xl mx-auto w-full px-6 pt-32 pb-20">
-        <div class="text-center mb-16 relative z-10">
-            <h1 class="text-5xl font-black text-white mb-4">Get in <span class="gradient-cyan">Touch</span></h1>
-            <p class="text-slate-400 text-lg">We'd love to hear from you.</p>
+        <div class="text-center mb-12 md:mb-16 relative z-10">
+            <h1 class="text-4xl md:text-5xl font-black text-white mb-4">Get in <span class="gradient-cyan">Touch</span>
+            </h1>
+            <p class="text-slate-400 text-base md:text-lg">We'd love to hear from you.</p>
         </div>
 
         <div class="grid lg:grid-cols-2 gap-12">
@@ -103,6 +104,7 @@ if (!isset($_SESSION['user_id'])) {
                 </div>
             </div>
 
+<<<<<<< HEAD
             <div class="glass p-10 rounded-[2.5rem]">
                 <form id="contactForm" class="space-y-6">
                     <div class="grid md:grid-cols-2 gap-6">
@@ -132,6 +134,38 @@ if (!isset($_SESSION['user_id'])) {
                             class="text-xs font-bold text-slate-500 uppercase tracking-widest pl-1 mb-2 block">Message</label>
                         <textarea name="message" rows="4" placeholder="How can we help you?" required
                             class="input-field w-full bg-[#0f172a] border border-white/10 rounded-2xl px-5 py-4 text-white placeholder:text-slate-600 focus:outline-none resize-none"></textarea>
+=======
+            <div class="glass p-6 md:p-10 rounded-[2.5rem]">
+                <form id="contactForm" class="space-y-6">
+                    <div class="grid md:grid-cols-2 gap-4 md:gap-6">
+                        <div>
+                            <label
+                                class="text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-widest pl-1 mb-2 block">First
+                                Name</label>
+                            <input type="text" name="firstName" placeholder="John" required
+                                class="input-field w-full bg-[#0f172a] border border-white/10 rounded-2xl px-5 py-3 md:py-4 text-white placeholder:text-slate-600 focus:outline-none text-sm" />
+                        </div>
+                        <div>
+                            <label
+                                class="text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-widest pl-1 mb-2 block">Last
+                                Name</label>
+                            <input type="text" name="lastName" placeholder="Doe" required
+                                class="input-field w-full bg-[#0f172a] border border-white/10 rounded-2xl px-5 py-3 md:py-4 text-white placeholder:text-slate-600 focus:outline-none text-sm" />
+                        </div>
+                    </div>
+                    <div>
+                        <label
+                            class="text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-widest pl-1 mb-2 block">Email
+                            Address</label>
+                        <input type="email" name="email" placeholder="john@example.com" required
+                            class="input-field w-full bg-[#0f172a] border border-white/10 rounded-2xl px-5 py-3 md:py-4 text-white placeholder:text-slate-600 focus:outline-none text-sm" />
+                    </div>
+                    <div>
+                        <label
+                            class="text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-widest pl-1 mb-2 block">Message</label>
+                        <textarea name="message" rows="4" placeholder="How can we help you?" required
+                            class="input-field w-full bg-[#0f172a] border border-white/10 rounded-2xl px-5 py-3 md:py-4 text-white placeholder:text-slate-600 focus:outline-none resize-none text-sm"></textarea>
+>>>>>>> ea85590 (Implement Interview Prep section: quiz, landing page, and data)
                     </div>
                     <button type="submit"
                         class="w-full gradient-btn text-white py-4 rounded-2xl font-bold shadow-xl transition-all active:scale-[0.98]">

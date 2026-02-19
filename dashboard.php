@@ -203,17 +203,26 @@ require_once 'includes/courses_data.php';
 
     <main class="max-w-7xl mx-auto px-6 pt-32 pb-20 relative z-10">
         <!-- Header Section -->
-        <div class="flex flex-col md:flex-row justify-between items-end mb-16 animate-in" style="animation-delay: 0.1s">
+        <div class="flex flex-col md:flex-row justify-between items-center md:items-end mb-16 animate-in text-center md:text-left"
+            style="animation-delay: 0.1s">
             <div>
                 <span class="text-xs font-bold text-cyan-400 uppercase tracking-widest mb-2 block">Overview</span>
+<<<<<<< HEAD
                 <h1 class="text-4xl md:text-6xl font-black text-white tracking-tight">
+=======
+                <h1 class="text-3xl md:text-6xl font-black text-white tracking-tight">
+>>>>>>> ea85590 (Implement Interview Prep section: quiz, landing page, and data)
                     Welcome back, <span class="gradient-cyan">
                         <?php echo htmlspecialchars(explode(' ', $_SESSION['user_name'])[0]); ?>!
                     </span>
                 </h1>
+<<<<<<< HEAD
                 <p class="text-slate-400 mt-2 font-medium">Continue your learning journey</p>
+=======
+                <p class="text-slate-400 mt-2 font-medium text-sm md:text-base">Continue your learning journey</p>
+>>>>>>> ea85590 (Implement Interview Prep section: quiz, landing page, and data)
             </div>
-            <div class="mt-6 md:mt-0 glass px-6 py-4 rounded-2xl flex items-center gap-4">
+            <div class="mt-8 md:mt-0 glass px-6 py-4 rounded-2xl flex items-center gap-4 mx-auto md:mx-0">
                 <div class="w-10 h-10 bg-green-500/10 rounded-full flex items-center justify-center text-green-400">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
@@ -237,11 +246,11 @@ require_once 'includes/courses_data.php';
                 </svg>
                 Transform Your Career with Expert-Led Courses
             </div>
-            <h1 class="text-5xl md:text-7xl font-black text-white mb-8 leading-[1.1] tracking-tight">
+            <h1 class="text-4xl md:text-7xl font-black text-white mb-8 leading-[1.1] tracking-tight">
                 Master <span class="gradient-cyan">Programming</span> & <br class="hidden md:block" />
                 <span class="gradient-purple">AI Skills</span>
             </h1>
-            <p class="text-lg text-slate-400 mb-10 max-w-2xl mx-auto leading-relaxed">
+            <p class="text-base md:text-lg text-slate-400 mb-10 max-w-2xl mx-auto leading-relaxed">
                 Join thousands of learners mastering Python, Java, Machine Learning, and cutting-edge AI technologies.
                 Learn from industry experts with hands-on projects.
             </p>
