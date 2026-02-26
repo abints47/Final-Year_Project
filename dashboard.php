@@ -207,32 +207,34 @@ require_once 'includes/courses_data.php';
             style="animation-delay: 0.1s">
             <div>
                 <span class="text-xs font-bold text-cyan-400 uppercase tracking-widest mb-2 block">Overview</span>
-<<<<<<< HEAD
-                <h1 class="text-4xl md:text-6xl font-black text-white tracking-tight">
-=======
                 <h1 class="text-3xl md:text-6xl font-black text-white tracking-tight">
->>>>>>> ea85590 (Implement Interview Prep section: quiz, landing page, and data)
                     Welcome back, <span class="gradient-cyan">
                         <?php echo htmlspecialchars(explode(' ', $_SESSION['user_name'])[0]); ?>!
                     </span>
                 </h1>
-<<<<<<< HEAD
-                <p class="text-slate-400 mt-2 font-medium">Continue your learning journey</p>
-=======
                 <p class="text-slate-400 mt-2 font-medium text-sm md:text-base">Continue your learning journey</p>
->>>>>>> ea85590 (Implement Interview Prep section: quiz, landing page, and data)
             </div>
             <div class="mt-8 md:mt-0 glass px-6 py-4 rounded-2xl flex items-center gap-4 mx-auto md:mx-0">
-                <div class="w-10 h-10 bg-green-500/10 rounded-full flex items-center justify-center text-green-400">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-                            d="M13 10V3L4 14h7v7l9-11h-7z" />
-                    </svg>
-                </div>
-                <div>
-                    <p class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Current Streak</p>
-                    <p class="text-xl font-black text-white">12 Days</p>
-                </div>
+                <?php if ($_SESSION['user_role'] === 'teacher'): ?>
+                    <a href="upload_course.php"
+                        class="gradient-btn px-6 py-3 rounded-xl text-white font-bold text-sm shadow-lg shadow-cyan-500/20 hover:opacity-90 transition-all flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
+                        </svg>
+                        Upload Course
+                    </a>
+                <?php else: ?>
+                    <div class="w-10 h-10 bg-green-500/10 rounded-full flex items-center justify-center text-green-400">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Current Streak</p>
+                        <p class="text-xl font-black text-white">12 Days</p>
+                    </div>
+                <?php endif; ?>
             </div>
         </div>
 

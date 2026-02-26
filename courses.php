@@ -103,26 +103,6 @@ $filtered_courses = array_filter($all_courses, function ($course) use ($search, 
                 <!-- Category -->
                 <div class="space-y-2">
                     <label class="text-xs font-bold text-slate-400 uppercase tracking-widest pl-1">Category</label>
-<<<<<<< HEAD
-                    <select name="category" onchange="this.form.submit()"
-                        class="w-full bg-[#020617] border border-white/10 rounded-xl px-5 py-3 text-white focus:outline-none focus:border-cyan-500/50 transition-colors appearance-none">
-                        <option value="All" <?php echo $category === 'All' ? 'selected' : ''; ?>>All Categories</option>
-                        <option value="Programming" <?php echo $category === 'Programming' ? 'selected' : ''; ?>>
-                            Programming</option>
-                        <option value="Web Dev" <?php echo $category === 'Web Dev' ? 'selected' : ''; ?>>Web Development
-                        </option>
-                        <option value="AI/ML" <?php echo $category === 'AI/ML' ? 'selected' : ''; ?>>AI & Machine
-                            Learning</option>
-                        <option value="Security" <?php echo $category === 'Security' ? 'selected' : ''; ?>>Cyber Security
-                        </option>
-                        <option value="Cloud" <?php echo $category === 'Cloud' ? 'selected' : ''; ?>>Cloud Computing
-                        </option>
-                        <option value="Data Science" <?php echo $category === 'Data Science' ? 'selected' : ''; ?>>Data
-                            Science</option>
-                        <option value="Mobile Dev" <?php echo $category === 'Mobile Dev' ? 'selected' : ''; ?>>Mobile
-                            Development</option>
-                    </select>
-=======
                     <div class="relative">
                         <select name="category" onchange="this.form.submit()"
                             class="w-full bg-[#020617] border border-white/10 rounded-xl px-5 py-3 text-white focus:outline-none focus:border-cyan-500/50 transition-colors appearance-none text-sm">
@@ -151,7 +131,6 @@ $filtered_courses = array_filter($all_courses, function ($course) use ($search, 
                             </svg>
                         </div>
                     </div>
->>>>>>> ea85590 (Implement Interview Prep section: quiz, landing page, and data)
                 </div>
 
                 <!-- Level -->

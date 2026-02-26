@@ -19,8 +19,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($stmt->fetch()) {
                 $error = "This email is already registered.";
             } else {
-                $stmt = $pdo->prepare("INSERT INTO users (full_name, email_address, password) VALUES (?, ?, ?)");
-                $stmt->execute([$full_name, $email, $pass]);
+                $stmt = $pdo->prepare("INSERT INTO users (full_name, email_address, password, role) VALUES (?, ?, ?, ?)");
+                $stmt->execute([$full_name, $email, $pass, 'student']);
 
                 $_SESSION['user_id'] = $email;
                 $_SESSION['user_name'] = $full_name;
@@ -164,8 +164,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <div class="glass p-10 rounded-[2.5rem] shadow-2xl">
                 <div class="text-center mb-8">
-                    <h2 class="text-2xl font-bold text-white">Create Account</h2>
-                    <p class="text-slate-500 text-sm mt-1">Free for a limited time.</p>
+                    <span
+                        class="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-400 mb-2 block">Registration</span>
+                    <h2 class="text-2xl font-bold text-white">Join as a <span class="text-indigo-400">Student</span>
+                    </h2>
+                    <p class="text-slate-500 text-sm mt-1">Start your learning journey for free.</p>
                 </div>
                 <form action="index.php" method="POST" class="space-y-5">
                     <div>
@@ -188,10 +191,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </form>
 
                 <div class="mt-8 pt-8 border-t border-white/5 text-center">
+                    <p class="text-slate-500 text-xs mb-4 uppercase font-black tracking-widest">Other Roles</p>
+                    <div class="flex items-center justify-center gap-4">
+                        <a href="signup_teacher.php"
+                            class="text-emerald-400 font-bold text-sm hover:text-emerald-300 transition-colors">Teacher</a>
+                        <span class="w-1 h-1 bg-white/10 rounded-full"></span>
+                        <a href="signup_admin.php"
+                            class="text-rose-400 font-bold text-sm hover:text-rose-300 transition-colors">Admin</a>
+                    </div>
+                </div>
+
+                <div class="mt-6 text-center">
                     <p class="text-slate-400 text-sm">
-                        Already have an account?
-                        <a href="login.php"
-                            class="text-indigo-400 font-bold hover:text-indigo-300 transition-colors">Sign in</a>
+                        Have an account?
+                        <a href="login.php" class="text-white font-bold hover:underline transition-colors">Sign in</a>
                     </p>
                 </div>
             </div>

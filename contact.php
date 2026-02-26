@@ -104,37 +104,6 @@ if (!isset($_SESSION['user_id'])) {
                 </div>
             </div>
 
-<<<<<<< HEAD
-            <div class="glass p-10 rounded-[2.5rem]">
-                <form id="contactForm" class="space-y-6">
-                    <div class="grid md:grid-cols-2 gap-6">
-                        <div>
-                            <label
-                                class="text-xs font-bold text-slate-500 uppercase tracking-widest pl-1 mb-2 block">First
-                                Name</label>
-                            <input type="text" name="firstName" placeholder="John" required
-                                class="input-field w-full bg-[#0f172a] border border-white/10 rounded-2xl px-5 py-4 text-white placeholder:text-slate-600 focus:outline-none" />
-                        </div>
-                        <div>
-                            <label
-                                class="text-xs font-bold text-slate-500 uppercase tracking-widest pl-1 mb-2 block">Last
-                                Name</label>
-                            <input type="text" name="lastName" placeholder="Doe" required
-                                class="input-field w-full bg-[#0f172a] border border-white/10 rounded-2xl px-5 py-4 text-white placeholder:text-slate-600 focus:outline-none" />
-                        </div>
-                    </div>
-                    <div>
-                        <label class="text-xs font-bold text-slate-500 uppercase tracking-widest pl-1 mb-2 block">Email
-                            Address</label>
-                        <input type="email" name="email" placeholder="john@example.com" required
-                            class="input-field w-full bg-[#0f172a] border border-white/10 rounded-2xl px-5 py-4 text-white placeholder:text-slate-600 focus:outline-none" />
-                    </div>
-                    <div>
-                        <label
-                            class="text-xs font-bold text-slate-500 uppercase tracking-widest pl-1 mb-2 block">Message</label>
-                        <textarea name="message" rows="4" placeholder="How can we help you?" required
-                            class="input-field w-full bg-[#0f172a] border border-white/10 rounded-2xl px-5 py-4 text-white placeholder:text-slate-600 focus:outline-none resize-none"></textarea>
-=======
             <div class="glass p-6 md:p-10 rounded-[2.5rem]">
                 <form id="contactForm" class="space-y-6">
                     <div class="grid md:grid-cols-2 gap-4 md:gap-6">
@@ -165,7 +134,6 @@ if (!isset($_SESSION['user_id'])) {
                             class="text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-widest pl-1 mb-2 block">Message</label>
                         <textarea name="message" rows="4" placeholder="How can we help you?" required
                             class="input-field w-full bg-[#0f172a] border border-white/10 rounded-2xl px-5 py-3 md:py-4 text-white placeholder:text-slate-600 focus:outline-none resize-none text-sm"></textarea>
->>>>>>> ea85590 (Implement Interview Prep section: quiz, landing page, and data)
                     </div>
                     <button type="submit"
                         class="w-full gradient-btn text-white py-4 rounded-2xl font-bold shadow-xl transition-all active:scale-[0.98]">

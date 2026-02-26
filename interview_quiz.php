@@ -10,16 +10,30 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 $category = isset($_GET['category']) ? $_GET['category'] : 'logical';
-$questions_pool = isset($interview_questions[$category]) ? $interview_questions[$category] : [];
+$quiz_type = isset($_GET['type']) ? $_GET['type'] : 'practice'; // 'practice' or 'mock'
 
-// Randomly pick 10 questions
+if ($category === 'all') {
+    $questions_pool = [];
+    foreach ($interview_questions as $cat_questions) {
+        $questions_pool = array_merge($questions_pool, $cat_questions);
+    }
+} else {
+    $questions_pool = isset($interview_questions[$category]) ? $interview_questions[$category] : [];
+}
+
+// Randomly pick questions
+$question_count = ($quiz_type === 'mock') ? 20 : 10;
 shuffle($questions_pool);
-$selected_questions = array_slice($questions_pool, 0, 10);
+$selected_questions = array_slice($questions_pool, 0, min(count($questions_pool), $question_count));
 
 $category_names = [
     'logical' => 'Logical Reasoning',
     'quant' => 'Quantitative Aptitude',
-    'verbal' => 'Verbal Ability'
+    'verbal' => 'Verbal Ability',
+    'dsa' => 'DSA Fundamentals',
+    'dbms' => 'DBMS Architecture',
+    'web' => 'Web Fundamentals',
+    'all' => 'Mock Interview'
 ];
 $current_category_name = isset($category_names[$category]) ? $category_names[$category] : 'Quiz';
 ?>
@@ -68,6 +82,25 @@ $current_category_name = isset($category_names[$category]) ? $category_names[$ca
             background: rgba(34, 211, 238, 0.1);
             border-color: #22d3ee;
             box-shadow: 0 0 15px rgba(34, 211, 238, 0.1);
+        }
+
+        .option-card.correct {
+            background: rgba(34, 197, 94, 0.15) !important;
+            border-color: #22c55e !important;
+            color: #4ade80 !important;
+            box-shadow: 0 0 15px rgba(34, 197, 94, 0.2);
+        }
+
+        .option-card.incorrect {
+            background: rgba(239, 68, 68, 0.15) !important;
+            border-color: #ef4444 !important;
+            color: #f87171 !important;
+            box-shadow: 0 0 15px rgba(239, 68, 68, 0.2);
+        }
+
+        .option-card.answered {
+            cursor: default;
+            pointer-events: none;
         }
 
         .aura {
@@ -124,6 +157,14 @@ $current_category_name = isset($category_names[$category]) ? $category_names[$ca
                 <div id="options-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <!-- Options injected here -->
                 </div>
+
+                <!-- Feedback Toast -->
+                <div id="feedback-area" class="mt-8 opacity-0 transition-opacity duration-300">
+                    <div id="feedback-message" class="flex items-center gap-3 p-4 rounded-2xl font-bold">
+                        <span id="feedback-icon" class="w-6 h-6"></span>
+                        <span id="feedback-text"></span>
+                    </div>
+                </div>
             </div>
 
             <!-- Navigation -->
@@ -174,19 +215,29 @@ $current_category_name = isset($category_names[$category]) ? $category_names[$ca
                     Back to Prep
                 </a>
             </div>
+
+            <!-- Review Section (Hidden by default) -->
+            <div id="review-section" class="mt-16 text-left border-t border-white/10 pt-16 hidden">
+                <h3 class="text-2xl font-bold text-white mb-8">Detailed Review</h3>
+                <div id="review-list" class="space-y-6">
+                    <!-- Review items injected here -->
+                </div>
+            </div>
         </div>
     </main>
 
     <script>
         const questions = <?php echo json_encode($selected_questions); ?>;
+        const quizType = '<?php echo $quiz_type; ?>';
         let currentIndex = 0;
         let userAnswers = new Array(questions.length).fill(null);
-        let timeLeft = 600; // 10 minutes
+        let timeLeft = (quizType === 'mock') ? 1200 : 600; // 20 mins for mock, 10 for practice
 
         const timerEl = document.getElementById('timer');
         const questionTextEl = document.getElementById('question-text');
         const optionsGridEl = document.getElementById('options-grid');
         const currentIndexEl = document.getElementById('current-index');
+        const totalIndexEl = document.querySelector('span#current-index + span'); // Add this for dynamic count if needed
         const progressBarEl = document.getElementById('progress-bar');
         const prevBtn = document.getElementById('prev-btn');
         const nextBtn = document.getElementById('next-btn');
@@ -194,6 +245,15 @@ $current_category_name = isset($category_names[$category]) ? $category_names[$ca
         const quizContainer = document.getElementById('quiz-container');
         const resultContainer = document.getElementById('result-container');
         const scoreTextEl = document.getElementById('score-text');
+        const totalScoreEl = document.querySelector('.text-2xl.text-slate-600');
+        const feedbackArea = document.getElementById('feedback-area');
+        const feedbackMessage = document.getElementById('feedback-message');
+        const feedbackIcon = document.getElementById('feedback-icon');
+        const feedbackText = document.getElementById('feedback-text');
+
+        // Update UI for question count
+        document.querySelector('span#current-index').nextSibling.textContent = ` of ${questions.length}`;
+        totalScoreEl.textContent = `/${questions.length}`;
 
         function startTimer() {
             const timerInterval = setInterval(() => {
@@ -211,23 +271,68 @@ $current_category_name = isset($category_names[$category]) ? $category_names[$ca
 
         function renderQuestion() {
             const q = questions[currentIndex];
+            const hasAnswered = userAnswers[currentIndex] !== null;
+            const isMock = quizType === 'mock';
+
             questionTextEl.textContent = q.question;
             optionsGridEl.innerHTML = '';
+            feedbackArea.classList.add('opacity-0');
 
             q.options.forEach((option, index) => {
+                const isSelected = userAnswers[currentIndex] === index;
+                const isCorrect = index === q.answer;
+
+                let feedbackClass = '';
+                // Only show correction feedback in practice mode
+                if (hasAnswered && !isMock) {
+                    if (isCorrect) feedbackClass = 'correct';
+                    else if (isSelected) feedbackClass = 'incorrect';
+                }
+
                 const div = document.createElement('div');
-                div.className = `option-card glass p-6 rounded-2xl border border-white/10 text-slate-300 font-medium ${userAnswers[currentIndex] === index ? 'selected' : ''}`;
+                div.className = `option-card glass p-6 rounded-2xl border border-white/10 text-slate-300 font-medium ${isSelected ? 'selected' : ''} ${feedbackClass} ${hasAnswered && !isMock ? 'answered' : ''}`;
+
                 div.innerHTML = `
                     <div class="flex items-center gap-4">
                         <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-xs font-bold border border-white/10">
                             ${String.fromCharCode(65 + index)}
                         </div>
                         <span>${option}</span>
+                        ${!isMock && hasAnswered && isCorrect ? `
+                            <svg class="w-5 h-5 text-green-400 ml-auto" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                            </svg>
+                        ` : ''}
+                        ${!isMock && hasAnswered && isSelected && !isCorrect ? `
+                            <svg class="w-5 h-5 text-red-400 ml-auto" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                            </svg>
+                        ` : ''}
                     </div>
                 `;
-                div.onclick = () => selectOption(index);
+
+                // Allow changing answers in mock mode, but lock in practice
+                if (!hasAnswered || isMock) {
+                    div.onclick = () => selectOption(index);
+                }
                 optionsGridEl.appendChild(div);
             });
+
+            // Show feedback message ONLY in practice mode
+            if (hasAnswered && !isMock) {
+                const isCorrect = userAnswers[currentIndex] === q.answer;
+                feedbackArea.classList.remove('opacity-0');
+
+                if (isCorrect) {
+                    feedbackMessage.className = "flex items-center gap-3 p-4 rounded-2xl font-bold bg-green-500/10 border border-green-500/20 text-green-400";
+                    feedbackIcon.innerHTML = `<svg fill="currentColor" viewBox="0 0 20 20"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`;
+                    feedbackText.textContent = "Correct Answer! Well done.";
+                } else {
+                    feedbackMessage.className = "flex items-center gap-3 p-4 rounded-2xl font-bold bg-red-500/10 border border-red-500/20 text-red-400";
+                    feedbackIcon.innerHTML = `<svg fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" /></svg>`;
+                    feedbackText.textContent = `Incorrect. The correct answer was: ${q.options[q.answer]}`;
+                }
+            }
 
             currentIndexEl.textContent = currentIndex + 1;
             progressBarEl.style.width = `${((currentIndex + 1) / questions.length) * 100}%`;
@@ -249,15 +354,50 @@ $current_category_name = isset($category_names[$category]) ? $category_names[$ca
 
         function finishQuiz() {
             let score = 0;
+            const reviewSection = document.getElementById('review-section');
+            const reviewList = document.getElementById('review-list');
+            reviewList.innerHTML = '';
+
             questions.forEach((q, i) => {
-                if (userAnswers[i] === q.answer) {
-                    score++;
-                }
+                const isCorrect = userAnswers[i] === q.answer;
+                if (isCorrect) score++;
+
+                const reviewItem = document.createElement('div');
+                reviewItem.className = `p-6 rounded-2xl border ${isCorrect ? 'bg-green-500/5 border-green-500/20' : 'bg-red-500/5 border-red-500/20'}`;
+                
+                reviewItem.innerHTML = `
+                    <div class="flex items-start gap-4">
+                        <div class="mt-1 w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${isCorrect ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}">
+                            <span class="text-[10px] font-bold">${i + 1}</span>
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="text-white font-medium mb-4">${q.question}</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div class="text-sm">
+                                    <span class="text-slate-500 block mb-1">Your Answer:</span>
+                                    <span class="${isCorrect ? 'text-green-400' : 'text-red-400'} font-bold">
+                                        ${userAnswers[i] !== null ? q.options[userAnswers[i]] : 'No Answer'}
+                                    </span>
+                                </div>
+                                ${!isCorrect ? `
+                                <div class="text-sm">
+                                    <span class="text-slate-500 block mb-1">Correct Answer:</span>
+                                    <span class="text-green-400 font-bold">${q.options[q.answer]}</span>
+                                </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                reviewList.appendChild(reviewItem);
             });
 
             quizContainer.classList.add('hidden');
             resultContainer.classList.remove('hidden');
             scoreTextEl.textContent = score;
+
+            // Show review section for both modes (or just mock as requested)
+            reviewSection.classList.remove('hidden');
         }
 
         prevBtn.onclick = () => {

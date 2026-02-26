@@ -12,7 +12,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = "Please fill in all fields.";
     } else {
         try {
-            $stmt = $pdo->prepare("SELECT full_name, email_address FROM users WHERE email_address = ? AND password = ?");
+            $stmt = $pdo->prepare("SELECT full_name, email_address, role, profile_photo FROM users WHERE email_address = ? AND password = ?");
             $stmt->execute([$email, $pass]);
             $user = $stmt->fetch();
 
@@ -20,8 +20,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['user_id'] = $user['email_address'];
                 $_SESSION['user_name'] = $user['full_name'];
                 $_SESSION['user_email'] = $user['email_address'];
+                $_SESSION['user_role'] = $user['role'];
+                $_SESSION['user_photo'] = $user['profile_photo'];
 
-                header("Location: dashboard.php");
+                // Redirect based on role
+                if ($user['role'] === 'admin') {
+                    header("Location: admin_panel.php");
+                } elseif ($user['role'] === 'teacher') {
+                    header("Location: teacher_dashboard.php");
+                } else {
+                    header("Location: dashboard.php");
+                }
                 exit();
             } else {
                 $error = "Invalid credentials.";

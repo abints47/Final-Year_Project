@@ -17,13 +17,28 @@
 
     <!-- Centered Links -->
     <div class="hidden md:flex items-center gap-10 absolute left-1/2 -translate-x-1/2">
-      <a href="dashboard.php" class="text-sm font-medium text-slate-300 hover:text-white transition-colors">Home</a>
+      <a href="<?php
+      if (isset($_SESSION['user_role'])) {
+        if ($_SESSION['user_role'] === 'admin')
+          echo 'admin_panel.php';
+        elseif ($_SESSION['user_role'] === 'teacher')
+          echo 'teacher_dashboard.php';
+        else
+          echo 'dashboard.php';
+      } else {
+        echo 'index.php';
+      }
+      ?>" class="text-sm font-medium text-slate-300 hover:text-white transition-colors">Home</a>
       <a href="courses.php" class="text-sm font-medium text-slate-300 hover:text-white transition-colors">Courses</a>
-<<<<<<< HEAD
-=======
+      <?php if (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin'): ?>
+        <a href="admin_panel.php" class="text-sm font-bold text-rose-400 hover:text-rose-300 transition-colors">Admin
+          Panel</a>
+      <?php elseif (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'teacher'): ?>
+        <a href="teacher_dashboard.php"
+          class="text-sm font-bold text-emerald-400 hover:text-emerald-300 transition-colors">Dashboard</a>
+      <?php endif; ?>
       <a href="interview_prep.php"
         class="text-sm font-medium text-slate-300 hover:text-white transition-colors">Interview Prep</a>
->>>>>>> ea85590 (Implement Interview Prep section: quiz, landing page, and data)
       <a href="profile.php" class="text-sm font-medium text-slate-300 hover:text-white transition-colors">Profile</a>
       <a href="contact.php" class="text-sm font-medium text-slate-300 hover:text-white transition-colors">Contact</a>
     </div>
@@ -35,21 +50,23 @@
           <div class="text-right hidden sm:block leading-tight">
             <p class="text-white font-bold text-sm tracking-tight"><?php echo htmlspecialchars($_SESSION['user_name']); ?>
             </p>
-            <p class="text-[#818cf8] font-black text-[10px] uppercase tracking-widest">Member</p>
+            <p class="text-[#818cf8] font-black text-[10px] uppercase tracking-widest">
+              <?php echo htmlspecialchars($_SESSION['user_role'] ?? 'Member'); ?>
+            </p>
           </div>
           <div
             class="w-10 h-10 rounded-xl overflow-hidden border border-white/10 bg-[#0f172a] transition-transform group-hover:scale-105">
-            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=<?php echo urlencode($_SESSION['user_name']); ?>"
-              alt="Profile" class="w-full h-full" />
+            <?php if (!empty($_SESSION['user_photo'])): ?>
+              <img src="<?php echo htmlspecialchars($_SESSION['user_photo']); ?>" alt="Profile"
+                class="w-full h-full object-cover" />
+            <?php else: ?>
+              <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=<?php echo urlencode($_SESSION['user_name']); ?>"
+                alt="Profile" class="w-full h-full" />
+            <?php endif; ?>
           </div>
         </div>
-<<<<<<< HEAD
-        <div class="w-px h-8 bg-white/10 mx-2"></div>
-        <a href="logout.php" class="text-sm font-bold text-slate-400 hover:text-white transition-colors">
-=======
         <div class="w-px h-8 bg-white/10 mx-2 hidden md:block"></div>
         <a href="logout.php" class="text-sm font-bold text-slate-400 hover:text-white transition-colors hidden md:block">
->>>>>>> ea85590 (Implement Interview Prep section: quiz, landing page, and data)
           Logout
         </a>
       <?php else: ?>
@@ -98,8 +115,39 @@
 
   <!-- Scrollable Content -->
   <div class="flex-1 overflow-y-auto p-8 flex flex-col gap-6">
+    <?php if (isset($_SESSION['user_name'])): ?>
+      <div class="flex items-center gap-4 p-4 rounded-[2rem] bg-indigo-500/5 border border-indigo-500/10">
+        <div class="w-16 h-16 rounded-2xl overflow-hidden border-2 border-indigo-500/20 bg-[#0f172a]">
+          <?php if (!empty($_SESSION['user_photo'])): ?>
+            <img src="<?php echo htmlspecialchars($_SESSION['user_photo']); ?>" alt="Profile"
+              class="w-full h-full object-cover" />
+          <?php else: ?>
+            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=<?php echo urlencode($_SESSION['user_name']); ?>"
+              alt="Profile" class="w-full h-full bg-indigo-100" />
+          <?php endif; ?>
+        </div>
+        <div>
+          <p class="text-white font-black text-xl tracking-tight"><?php echo htmlspecialchars($_SESSION['user_name']); ?>
+          </p>
+          <p class="text-indigo-400 font-bold text-xs uppercase tracking-widest">
+            <?php echo htmlspecialchars($_SESSION['user_role'] ?? 'Member'); ?></p>
+        </div>
+      </div>
+    <?php endif; ?>
+
     <div class="space-y-4">
-      <a href="dashboard.php"
+      <a href="<?php
+      if (isset($_SESSION['user_role'])) {
+        if ($_SESSION['user_role'] === 'admin')
+          echo 'admin_panel.php';
+        elseif ($_SESSION['user_role'] === 'teacher')
+          echo 'teacher_dashboard.php';
+        else
+          echo 'dashboard.php';
+      } else {
+        echo 'index.php';
+      }
+      ?>"
         class="menu-item flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/5 active:bg-white/10 transition-all font-bold"
         style="--i: 1">
         <div class="flex items-center gap-4">

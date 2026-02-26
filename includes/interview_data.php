@@ -155,5 +155,161 @@ $interview_questions = [
             'options' => ['Apiary', 'Aviary', 'Pantry', 'Nursery'],
             'answer' => 0
         ]
+    ],
+    'dsa' => [
+        [
+            'question' => 'What is the time complexity of searching an element in a binary search tree in the worst case?',
+            'options' => ['O(1)', 'O(log n)', 'O(n)', 'O(n log n)'],
+            'answer' => 2
+        ],
+        [
+            'question' => 'Which data structure is based on the LIFO principle?',
+            'options' => ['Queue', 'Linked List', 'Stack', 'Tree'],
+            'answer' => 2
+        ],
+        [
+            'question' => 'Which of the following sorting algorithms has the best worst-case time complexity?',
+            'options' => ['Bubble Sort', 'Selection Sort', 'Insertion Sort', 'Merge Sort'],
+            'answer' => 3
+        ],
+        [
+            'question' => 'The process of calling a function by itself is called:',
+            'options' => ['Iteration', 'Recursion', 'Looping', 'Traversing'],
+            'answer' => 1
+        ],
+        [
+            'question' => 'What is the space complexity of a linear search algorithm?',
+            'options' => ['O(1)', 'O(n)', 'O(log n)', 'O(n^2)'],
+            'answer' => 0
+        ],
+        [
+            'question' => 'Which data structure is typically used for implementing Breadth First Search (BFS)?',
+            'options' => ['Stack', 'Queue', 'Array', 'Heap'],
+            'answer' => 1
+        ],
+        [
+            'question' => 'What is a circular linked list?',
+            'options' => ['A list where every node has two pointers', 'A list where the last node points back to the first node', 'A list that can be traversed in both directions', 'A list with no null pointers'],
+            'answer' => 1
+        ],
+        [
+            'question' => 'Which of the following is an example of a non-linear data structure?',
+            'options' => ['Array', 'Stack', 'Queue', 'Graph'],
+            'answer' => 3
+        ],
+        [
+            'question' => 'What is the height of a balanced binary tree with N nodes?',
+            'options' => ['O(N)', 'O(log N)', 'O(N^2)', 'O(1)'],
+            'answer' => 1
+        ],
+        [
+            'question' => 'In which data structure do we use a Hash Function?',
+            'options' => ['Binary Tree', 'Linked List', 'Hash Table', 'Queue'],
+            'answer' => 2
+        ]
+    ],
+    'dbms' => [
+        [
+            'question' => 'What does SQL stand for?',
+            'options' => ['Structured Query Language', 'Simple Query Language', 'Sequential Query Language', 'Strong Query Language'],
+            'answer' => 0
+        ],
+        [
+            'question' => 'Which property of ACID ensures that a transaction is treated as a single unit or "all-or-nothing"?',
+            'options' => ['Consistency', 'Isolation', 'Atomicity', 'Durability'],
+            'answer' => 2
+        ],
+        [
+            'question' => 'Which normal form deals with removing partial dependencies?',
+            'options' => ['1NF', '2NF', '3NF', 'BCNF'],
+            'answer' => 1
+        ],
+        [
+            'question' => 'Which SQL command is used to remove all records from a table without deleting the table structure?',
+            'options' => ['DROP', 'DELETE', 'TRUNCATE', 'REMOVE'],
+            'answer' => 2
+        ],
+        [
+            'question' => 'A primary key must be:',
+            'options' => ['Unique only', 'Not Null only', 'Both Unique and Not Null', 'None of these'],
+            'answer' => 2
+        ],
+        [
+            'question' => 'Which join returns all records when there is a match in either left or right table?',
+            'options' => ['INNER JOIN', 'LEFT JOIN', 'RIGHT JOIN', 'FULL OUTER JOIN'],
+            'answer' => 3
+        ],
+        [
+            'question' => 'What is a foreign key?',
+            'options' => ['A key used to encrypt data', 'A key that uniquely identifies a row in another table', 'A key that connects to an external database', 'A key used for indexing'],
+            'answer' => 1
+        ],
+        [
+            'question' => 'Which of the following is a DDL command?',
+            'options' => ['SELECT', 'UPDATE', 'CREATE', 'INSERT'],
+            'answer' => 2
+        ],
+        [
+            'question' => 'The result of which of the following operations is always a single value?',
+            'options' => ['SELECT *', 'Aggregate Functions (like COUNT)', 'JOIN', 'GROUP BY'],
+            'answer' => 1
+        ],
+        [
+            'question' => 'What is an Index in a database?',
+            'options' => ['A table that stores passwords', 'A data structure that improves the speed of data retrieval', 'A list of all users', 'A backup of the database'],
+            'answer' => 1
+        ]
+    ],
+    'web' => [
+        [
+            'question' => 'What does HTML stand for?',
+            'options' => ['Hyperlinks and Text Markup Language', 'Hyper Text Markup Language', 'Home Tool Markup Language', 'Hyper Tool Markup Language'],
+            'answer' => 1
+        ],
+        [
+            'question' => 'Which CSS property is used to change the text color of an element?',
+            'options' => ['text-color', 'font-color', 'color', 'background-color'],
+            'answer' => 2
+        ],
+        [
+            'question' => 'Which of the following is NOT a JavaScript framework or library?',
+            'options' => ['React', 'Vue', 'Django', 'Angular'],
+            'answer' => 2
+        ],
+        [
+            'question' => 'What is the correct HTML element for the largest heading?',
+            'options' => ['<heading>', '<h6>', '<h1>', '<head>'],
+            'answer' => 2
+        ],
+        [
+            'question' => 'Which JavaScript method is used to write text into the browser console?',
+            'options' => ['console.log()', 'console.print()', 'console.write()', 'print.console()'],
+            'answer' => 0
+        ],
+        [
+            'question' => 'What is the purpose of the "alt" attribute in an <img> tag?',
+            'options' => ['To set the image alignment', 'To provide alternative text if the image cannot be displayed', 'To link the image to another page', 'To change the image size'],
+            'answer' => 1
+        ],
+        [
+            'question' => 'Which CSS layout mode is designed for one-dimensional layouts?',
+            'options' => ['Grid', 'Flexbox', 'Block', 'Inline'],
+            'answer' => 1
+        ],
+        [
+            'question' => 'How do you declare a JavaScript variable that cannot be reassigned?',
+            'options' => ['var', 'let', 'const', 'fixed'],
+            'answer' => 2
+        ],
+        [
+            'question' => 'What does the DOM stand for?',
+            'options' => ['Digital Object Model', 'Document Object Model', 'Data Object Model', 'Direct Object Model'],
+            'answer' => 1
+        ],
+        [
+            'question' => 'Which HTML tag is used to define an internal style sheet?',
+            'options' => ['<css>', '<script>', '<style>', '<design>'],
+            'answer' => 2
+        ]
     ]
 ];

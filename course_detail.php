@@ -13,7 +13,7 @@ $course = null;
 
 // Find the course in our data array
 foreach ($all_courses as $item) {
-    if ($item['id'] === $course_id) {
+    if ($item['id'] == $course_id) {
         $course = $item;
         break;
     }
@@ -24,6 +24,17 @@ if (!$course) {
     header('Location: courses.php');
     exit;
 }
+
+// Robust YouTube ID extraction
+function get_yt_id($url)
+{
+    $pattern = '/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/';
+    if (preg_match($pattern, $url, $matches)) {
+        return $matches[1];
+    }
+    return $url; // Return as-is if no match (already an ID)
+}
+$yt_id = get_yt_id($course['youtube_id']);
 ?>
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth">
@@ -45,233 +56,352 @@ if (!$course) {
         }
 
         .glass {
-            background: rgba(15, 23, 42, 0.6);
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .glass-bright {
+            background: rgba(255, 255, 255, 0.03);
             backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.08);
         }
 
-        .gradient-courses {
-            background: linear-gradient(to right, #22d3ee, #818cf8);
+        .gradient-cyan {
+            background: linear-gradient(135deg, #22d3ee 0%, #0ea5e9 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
-        .aura {
+        .gradient-border {
+            position: relative;
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 2rem;
+        }
+
+        .gradient-border::before {
+            content: "";
             position: absolute;
-            border-radius: 50%;
-            filter: blur(120px);
-            opacity: 0.15;
-            z-index: -1;
+            inset: -1px;
+            border-radius: 2rem;
+            padding: 1px;
+            background: linear-gradient(135deg, rgba(34, 211, 238, 0.3) 0%, rgba(192, 132, 252, 0.3) 100%);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
             pointer-events: none;
         }
 
-        .video-container {
-            position: relative;
-            padding-bottom: 56.25%;
-            height: 0;
-            overflow: hidden;
-            border-radius: 1.5rem;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
 
-        .video-container iframe {
+        .glow {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(34, 211, 238, 0.15) 0%, transparent 70%);
+            filter: blur(60px);
+            pointer-events: none;
+            z-index: -1;
         }
     </style>
 </head>
 
-<body class="min-h-screen flex flex-col pt-24">
-    <!-- Background Auras -->
-    <div class="fixed inset-0 overflow-hidden pointer-events-none z-0">
-        <div class="aura bg-cyan-600 w-96 h-96 top-0 left-0 -translate-x-1/2 -translate-y-1/2"></div>
-        <div class="aura bg-purple-600 w-96 h-96 bottom-0 right-0 translate-x-1/2 translate-y-1/2"></div>
+<body class="min-h-screen flex flex-col pt-24 bg-[#020617] selection:bg-cyan-500/30">
+    <div
+        class="fixed top-0 left-0 w-full h-[800px] bg-gradient-to-b from-cyan-600/5 to-transparent pointer-events-none z-0">
     </div>
+    <div class="glow top-20 -left-20"></div>
+    <div class="glow bottom-0 -right-20 group-hover:opacity-100 transition-opacity"
+        style="background: radial-gradient(circle, rgba(192, 132, 252, 0.1) 0%, transparent 70%);"></div>
 
     <?php include 'components/navbar.php'; ?>
 
-    <main class="max-w-7xl mx-auto px-6 py-12 w-full relative z-10 flex flex-col lg:flex-row gap-8">
-        <!-- Content Column -->
-        <div class="flex-1 space-y-12">
-            <!-- Header Section -->
-            <div class="space-y-6">
-                <div class="flex items-center gap-3">
+    <main class="max-w-7xl mx-auto px-6 py-12 relative z-10">
+        <!-- Hero Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 mb-20">
+            <!-- Left Info -->
+            <div class="lg:col-span-7 space-y-8">
+                <div class="flex flex-wrap items-center gap-4">
                     <span
-                        class="bg-cyan-500/20 text-cyan-400 text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg border border-cyan-500/30">
+                        class="px-4 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-[10px] font-black uppercase tracking-widest">
                         <?php echo htmlspecialchars($course['category']); ?>
                     </span>
                     <span
-                        class="bg-white/5 text-slate-400 text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg border border-white/10">
+                        class="px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-slate-400 text-[10px] font-black uppercase tracking-widest">
                         <?php echo htmlspecialchars($course['level']); ?>
                     </span>
+                    <div class="flex items-center gap-1.5 ml-auto md:ml-0">
+                        <svg class="w-4 h-4 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path
+                                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                        </svg>
+                        <span class="text-sm font-black text-white"><?php echo $course['rating']; ?></span>
+                        <span class="text-xs text-slate-500 font-medium">(<?php echo $course['students']; ?>+
+                            Students)</span>
+                    </div>
                 </div>
-                <h1 class="text-3xl md:text-6xl font-black text-white leading-tight">
+
+                <h1 class="text-4xl md:text-7xl font-black text-white leading-[1.1] tracking-tighter">
                     <?php echo htmlspecialchars($course['title']); ?>
                 </h1>
-                <p class="text-lg md:text-xl text-slate-400 leading-relaxed max-w-2xl">
+
+                <p class="text-lg md:text-xl text-slate-400 leading-relaxed max-w-2xl font-medium">
                     <?php echo htmlspecialchars($course['summary']); ?>
                 </p>
 
-                <!-- Course Stats -->
-                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 p-4 md:p-6 glass rounded-2xl">
-                    <div class="space-y-1">
-                        <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Instructor</p>
-                        <p class="text-xs md:text-sm font-semibold text-white">
-                            <?php echo htmlspecialchars($course['author']); ?>
-                        </p>
-                    </div>
-                    <div class="space-y-1">
-                        <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Rating</p>
-                        <div class="flex items-center gap-1">
-                            <svg class="w-3 h-3 md:w-4 md:h-4 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
-                                <path
-                                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                            </svg>
-                            <p class="text-xs md:text-sm font-semibold text-white">
-                                <?php echo htmlspecialchars($course['rating']); ?>
+                <div class="flex items-center gap-6 pt-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-cyan-400 to-blue-500 p-[1px]">
+                            <div class="w-full h-full rounded-2xl bg-[#020617] overflow-hidden">
+                                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=<?php echo urlencode($course['author']); ?>"
+                                    class="w-full h-full object-cover">
+                            </div>
+                        </div>
+                        <div>
+                            <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest leading-none mb-1">
+                                Instructor</p>
+                            <p class="text-sm font-bold text-white"><?php echo htmlspecialchars($course['author']); ?>
                             </p>
                         </div>
                     </div>
-                    <div class="space-y-1">
-                        <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Students</p>
-                        <p class="text-xs md:text-sm font-semibold text-white">
-                            <?php echo htmlspecialchars($course['students']); ?>
-                        </p>
-                    </div>
-                    <div class="space-y-1">
-                        <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Modules</p>
-                        <p class="text-xs md:text-sm font-semibold text-white">
-                            <?php echo htmlspecialchars($course['lessons']); ?> Lessons
-                        </p>
+                    <div class="w-px h-10 bg-white/10 hidden sm:block"></div>
+                    <div class="hidden sm:block">
+                        <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest leading-none mb-1">
+                            Duration</p>
+                        <p class="text-sm font-bold text-white"><?php echo $course['duration']; ?> total</p>
                     </div>
                 </div>
             </div>
 
-            <!-- What You'll Learn -->
-            <section class="space-y-6">
-                <h2 class="text-3xl font-bold text-white">What You'll Learn</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <?php foreach ($course['what_you_learn'] as $point): ?>
-                        <div class="flex items-start gap-3 p-4 glass rounded-xl">
-                            <div class="mt-1">
-                                <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-                                        d="M5 13l4 4L19 7" />
-                                </svg>
-                            </div>
-                            <p class="text-slate-300 font-medium">
-                                <?php echo htmlspecialchars($point); ?>
-                            </p>
-                        </div>
-                    <?php endforeach; ?>
-                </div>
-            </section>
-
-            <!-- Video Section -->
-            <section class="space-y-6">
-                <h2 class="text-3xl font-bold text-white">Full Course Overview</h2>
-                <div class="video-container">
-                    <iframe src="https://www.youtube.com/embed/<?php echo $course['youtube_id']; ?>"
-                        title="YouTube video player" frameborder="0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                        allowfullscreen></iframe>
-                </div>
-            </section>
-
-            <!-- Detailed Summary -->
-            <section class="space-y-6">
-                <h2 class="text-2xl md:text-3xl font-bold text-white">Course Description</h2>
-                <div class="prose prose-invert max-w-none text-slate-400 leading-relaxed text-base md:text-lg">
-                    <?php echo nl2br(htmlspecialchars($course['full_summary'])); ?>
-                </div>
-            </section>
-
-            <!-- Resources -->
-            <section class="space-y-6">
-                <h2 class="text-3xl font-bold text-white">Additional Resources</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <?php foreach ($course['resources'] as $res): ?>
-                        <a href="<?php echo $res['url']; ?>" target="_blank"
-                            class="flex items-center justify-between p-5 glass rounded-2xl hover:border-cyan-500/30 transition-all group">
-                            <div class="flex items-center gap-4">
+            <!-- Right Preview Card -->
+            <div class="lg:col-span-5">
+                <div class="gradient-border p-[1px] shadow-2xl overflow-hidden group">
+                    <div class="bg-[#0f172a] rounded-[2rem] overflow-hidden">
+                        <div class="relative overflow-hidden aspect-video">
+                            <img src="<?php echo $course['image']; ?>"
+                                class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+                            <div class="absolute inset-0 bg-black/40 flex items-center justify-center">
                                 <div
-                                    class="p-3 bg-white/5 rounded-xl text-slate-400 group-hover:text-cyan-400 transition-colors">
-                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                                    class="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-2xl shadow-white/20 transition-transform group-hover:scale-110">
+                                    <svg class="w-8 h-8 text-black ml-1" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M8 5v14l11-7z" />
                                     </svg>
                                 </div>
-                                <span class="font-bold text-white">
-                                    <?php echo htmlspecialchars($res['name']); ?>
-                                </span>
                             </div>
-                            <svg class="w-5 h-5 text-slate-500 group-hover:translate-x-1 transition-transform" fill="none"
-                                stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                            </svg>
-                        </a>
-                    <?php endforeach; ?>
+                            <div class="absolute bottom-6 left-6 right-6">
+                                <p class="text-white font-black text-sm uppercase tracking-widest text-center">Preview
+                                    Course Content</p>
+                            </div>
+                        </div>
+                        <div class="p-8 space-y-6">
+                            <div class="flex items-baseline gap-2">
+                                <span class="text-4xl font-black text-white">Free</span>
+                                <span class="text-slate-500 line-through text-lg">$99.99</span>
+                            </div>
+                            <button
+                                class="w-full py-4 bg-white text-black font-black rounded-2xl text-lg transition-all hover:bg-slate-200 active:scale-[98%] shadow-xl shadow-cyan-500/10">
+                                Enroll Now
+                            </button>
+                            <p class="text-[10px] text-center text-slate-500 font-bold uppercase tracking-widest">30-Day
+                                Money Back Guarantee</p>
+                        </div>
+                    </div>
                 </div>
-            </section>
+            </div>
         </div>
 
-        <!-- Sidebar Column -->
-        <div class="lg:w-96 space-y-6">
-            <div class="glass p-6 md:p-8 rounded-[2.5rem] lg:sticky lg:top-32 space-y-8">
-                <div class="rounded-3xl overflow-hidden border border-white/10 shadow-2xl">
-                    <img src="<?php echo $course['image']; ?>" alt="Course preview" class="w-full h-auto">
+        <!-- Video & Summary Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 mb-24">
+            <div class="lg:col-span-8">
+                <div class="gradient-border p-[1px] shadow-2xl overflow-hidden group">
+                    <div class="aspect-video w-full rounded-[2rem] overflow-hidden bg-black/50 relative">
+                        <iframe
+                            src="https://www.youtube.com/embed/<?php echo $yt_id; ?>?autoplay=0&rel=0&modestbranding=1"
+                            title="Course Overview" class="absolute inset-0 w-full h-full border-0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowfullscreen>
+                        </iframe>
+                    </div>
                 </div>
-
-                <div class="space-y-4">
-                    <button
-                        class="w-full py-4 bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold rounded-2xl shadow-lg shadow-cyan-500/25 hover:scale-[1.02] active:scale-[0.98] transition-all">
-                        Watch Now
-                    </button>
-                    <button
-                        class="w-full py-4 glass text-white font-bold rounded-2xl hover:bg-white/5 transition-all flex items-center justify-center gap-2">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                        </svg>
-                        Add to Wishlist
-                    </button>
+            </div>
+            <div class="lg:col-span-4 flex flex-col justify-center">
+                <div class="glass p-8 rounded-[2.5rem] border border-white/10 space-y-6">
+                    <h3 class="text-2xl font-black text-white">Course Preview</h3>
+                    <p class="text-slate-400 font-medium leading-relaxed">
+                        <?php echo htmlspecialchars($course['summary']); ?>
+                    </p>
+                    <div class="pt-6 border-t border-white/5 space-y-4">
+                        <div class="flex items-center gap-3">
+                            <div
+                                class="w-8 h-8 rounded-lg bg-cyan-500/10 flex items-center justify-center text-cyan-400">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                            <span class="text-sm font-bold text-white"><?php echo $course['duration']; ?> of
+                                content</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div
+                                class="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center text-purple-400">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                </svg>
+                            </div>
+                            <span class="text-sm font-bold text-white">Full Lifetime Access</span>
+                        </div>
+                    </div>
                 </div>
+            </div>
+        </div>
 
-                <div class="space-y-6 pt-6 border-t border-white/5">
-                    <h4 class="font-bold text-white">This course includes:</h4>
-                    <ul class="space-y-4">
-                        <li class="flex items-center gap-3 text-sm text-slate-400">
-                            <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <?php echo $course['duration']; ?> on-demand video
-                        </li>
-                        <li class="flex items-center gap-3 text-sm text-slate-400">
-                            <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                            </svg>
-                            Coding exercises
-                        </li>
-                        <li class="flex items-center gap-3 text-sm text-slate-400">
-                            <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                            </svg>
-                            Access on mobile and TV
-                        </li>
-                        <li class="flex items-center gap-3 text-sm text-slate-400">
-                            <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                            </svg>
-                            Certificate of completion
-                        </li>
-                    </ul>
+        <!-- Course Summary & Highlights Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-12 mb-24">
+            <div class="lg:col-span-2 space-y-16">
+                <!-- What you'll learn (Premium List) -->
+                <section class="space-y-8">
+                    <h3 class="text-3xl font-black text-white flex items-center gap-3">
+                        <span class="w-2 h-10 bg-cyan-500 rounded-full"></span>
+                        Summary & Learning Outcomes
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <?php foreach ($course['what_you_learn'] as $point): ?>
+                            <div class="glass p-6 rounded-3xl flex items-start gap-4 hover:bg-white/5 transition-all">
+                                <div
+                                    class="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center shrink-0">
+                                    <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                            d="M5 13l4 4L19 7" />
+                                    </svg>
+                                </div>
+                                <p class="text-slate-300 font-semibold leading-relaxed">
+                                    <?php echo htmlspecialchars($point); ?>
+                                </p>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                </section>
+
+                <!-- Curriculum / Lesson List -->
+                <section class="space-y-8">
+                    <h3 class="text-3xl font-black text-white flex items-center gap-3">
+                        <span class="w-2 h-10 bg-purple-500 rounded-full"></span>
+                        Course Curriculum
+                    </h3>
+                    <div class="space-y-4">
+                        <?php
+                        // Simulated curriculum based on lessons count
+                        $modules = ['Core Concepts', 'Deep Dive', 'Project Implementation', 'Advanced Optimization'];
+                        for ($i = 0; $i < count($modules); $i++):
+                            ?>
+                            <div class="glass rounded-3xl overflow-hidden">
+                                <button class="w-full px-8 py-6 flex items-center justify-between text-left group">
+                                    <div class="flex items-center gap-6">
+                                        <span class="text-2xl font-black text-slate-700">0<?php echo $i + 1; ?></span>
+                                        <div>
+                                            <h4
+                                                class="text-lg font-bold text-white group-hover:text-cyan-400 transition-colors">
+                                                <?php echo $modules[$i]; ?>
+                                            </h4>
+                                            <p class="text-xs text-slate-500 font-bold uppercase tracking-widest mt-1">
+                                                <?php echo rand(2, 5); ?> Lessons • <?php echo rand(45, 120); ?>m
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <svg class="w-6 h-6 text-slate-600 transition-transform group-hover:rotate-180"
+                                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </button>
+                            </div>
+                        <?php endfor; ?>
+                    </div>
+                </section>
+
+                <!-- Course Description -->
+                <section class="space-y-8">
+                    <h3 class="text-3xl font-black text-white flex items-center gap-3">
+                        <span class="w-2 h-10 bg-emerald-500 rounded-full"></span>
+                        About this Course
+                    </h3>
+                    <div class="glass p-8 rounded-[2rem] border border-white/5">
+                        <div class="prose prose-invert max-w-none text-slate-400 leading-relaxed text-lg font-medium">
+                            <?php echo nl2br(htmlspecialchars($course['full_summary'])); ?>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Sidebar Info -->
+            <div class="space-y-8">
+                <div class="glass p-8 rounded-[2.5rem] sticky top-32 border border-white/10 shadow-3xl">
+                    <h4 class="text-xl font-bold text-white mb-8">Course Highlights</h4>
+                    <div class="space-y-6">
+                        <div class="flex items-center gap-4 group">
+                            <div
+                                class="w-10 h-10 rounded-xl bg-cyan-400/10 flex items-center justify-center text-cyan-400 group-hover:scale-110 transition-transform">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="text-xs font-bold text-slate-500 uppercase tracking-widest">Accessibility</p>
+                                <p class="text-sm font-bold text-white">Mobile & TV Access</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4 group">
+                            <div
+                                class="w-10 h-10 rounded-xl bg-purple-400/10 flex items-center justify-center text-purple-400 group-hover:scale-110 transition-transform">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="text-xs font-bold text-slate-500 uppercase tracking-widest">Skill Level</p>
+                                <p class="text-sm font-bold text-white"><?php echo $course['level']; ?> Concepts</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4 group">
+                            <div
+                                class="w-10 h-10 rounded-xl bg-emerald-400/10 flex items-center justify-center text-emerald-400 group-hover:scale-110 transition-transform">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="text-xs font-bold text-slate-500 uppercase tracking-widest">Certification</p>
+                                <p class="text-sm font-bold text-white">Certificate of Completion</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pt-8 mt-8 border-t border-white/5">
+                        <h5 class="text-xs font-black text-slate-500 uppercase tracking-widest mb-4">Resources Included
+                        </h5>
+                        <div class="space-y-4">
+                            <?php foreach ($course['resources'] as $res): ?>
+                                <a href="<?php echo $res['url']; ?>" target="_blank"
+                                    class="block p-4 glass-bright rounded-2xl border border-white/5 hover:border-cyan-500/30 transition-all">
+                                    <div class="flex items-center justify-between">
+                                        <span
+                                            class="text-xs font-bold text-white truncate max-w-[150px]"><?php echo htmlspecialchars($res['name']); ?></span>
+                                        <svg class="w-4 h-4 text-cyan-500" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 00-2 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                        </svg>
+                                    </div>
+                                </a>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
