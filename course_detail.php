@@ -11,18 +11,32 @@ require_once 'includes/courses_data.php';
 $course_id = isset($_GET['id']) ? $_GET['id'] : null;
 $course = null;
 
-// Find the course in our data array
-foreach ($all_courses as $item) {
-    if ($item['id'] == $course_id) {
-        $course = $item;
-        break;
-    }
+// Get course from database directly for robustness
+try {
+    $stmt = $pdo->prepare("SELECT * FROM courses WHERE id = ?");
+    $stmt->execute([$course_id]);
+    $course = $stmt->fetch();
+} catch (PDOException $e) {
+    $course = null;
 }
 
 // Redirect if course not found
 if (!$course) {
     header('Location: courses.php');
     exit;
+}
+
+// Decode JSON fields if they are still strings
+if (is_string($course['what_you_learn'])) {
+    $course['what_you_learn'] = json_decode($course['what_you_learn'], true) ?: [];
+}
+if (is_string($course['resources'])) {
+    $course['resources'] = json_decode($course['resources'], true) ?: [];
+}
+
+// Image fallback
+if (empty($course['image'])) {
+    $course['image'] = 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&q=80&w=800';
 }
 
 // Robust YouTube ID extraction
@@ -46,32 +60,13 @@ $yt_id = get_yt_id($course['youtube_id']);
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
         rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/style.css">
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #020617;
-            color: #f8fafc;
-            overflow-x: hidden;
-            -webkit-font-smoothing: antialiased;
-        }
-
-        .glass {
-            background: rgba(15, 23, 42, 0.4);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
+        /* Specific page styles */
         .glass-bright {
             background: rgba(255, 255, 255, 0.03);
             backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.08);
-        }
-
-        .gradient-cyan {
-            background: linear-gradient(135deg, #22d3ee 0%, #0ea5e9 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
         }
 
         .gradient-border {
@@ -92,7 +87,6 @@ $yt_id = get_yt_id($course['youtube_id']);
             mask-composite: exclude;
             pointer-events: none;
         }
-
 
         .glow {
             position: absolute;
@@ -215,12 +209,24 @@ $yt_id = get_yt_id($course['youtube_id']);
             <div class="lg:col-span-8">
                 <div class="gradient-border p-[1px] shadow-2xl overflow-hidden group">
                     <div class="aspect-video w-full rounded-[2rem] overflow-hidden bg-black/50 relative">
-                        <iframe
-                            src="https://www.youtube.com/embed/<?php echo $yt_id; ?>?autoplay=0&rel=0&modestbranding=1"
-                            title="Course Overview" class="absolute inset-0 w-full h-full border-0"
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                            allowfullscreen>
-                        </iframe>
+                        <?php if (!empty($course['video_path'])): ?>
+                            <video class="absolute inset-0 w-full h-full object-cover" controls
+                                poster="<?php echo $course['image']; ?>">
+                                <source src="<?php echo htmlspecialchars($course['video_path']); ?>" type="video/mp4">
+                                Your browser does not support the video tag.
+                            </video>
+                        <?php elseif (!empty($yt_id)): ?>
+                            <iframe
+                                src="https://www.youtube.com/embed/<?php echo $yt_id; ?>?autoplay=0&rel=0&modestbranding=1"
+                                title="Course Overview" class="absolute inset-0 w-full h-full border-0"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowfullscreen>
+                            </iframe>
+                        <?php else: ?>
+                            <div class="absolute inset-0 flex items-center justify-center text-slate-500 font-bold italic">
+                                No preview video available for this course.
+                            </div>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>

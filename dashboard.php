@@ -19,74 +19,9 @@ require_once 'includes/courses_data.php';
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
         rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/style.css">
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #020617;
-            color: #f8fafc;
-            overflow-x: hidden;
-            -webkit-font-smoothing: antialiased;
-        }
-
-        .glass {
-            background: rgba(15, 23, 42, 0.6);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-        }
-
-        .course-card {
-            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .course-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.5);
-            border-color: rgba(34, 211, 238, 0.3);
-        }
-
-        .gradient-btn {
-            background: linear-gradient(to right, #22d3ee, #c084fc);
-        }
-
-        .gradient-cyan {
-            background: linear-gradient(to right, #22d3ee, #0ea5e9);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .animate-in {
-            animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-            opacity: 0;
-        }
-
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: #020617;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #334155;
-            border-radius: 4px;
-        }
-
-        /* Features Section Styles */
+        /* Specific page styles can remain if not reused */
         .section-header {
             text-align: center;
             margin-bottom: 4rem;
@@ -114,12 +49,6 @@ require_once 'includes/courses_data.php';
             color: white;
             margin-bottom: 1rem;
             letter-spacing: -0.025em;
-        }
-
-        .gradient-text {
-            background: linear-gradient(to right, #22d3ee, #c084fc);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
         }
 
         .section-description {
@@ -170,21 +99,6 @@ require_once 'includes/courses_data.php';
             color: #94a3b8;
             font-size: 0.875rem;
             line-height: 1.6;
-        }
-
-        .feature-card {
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            padding: 2rem;
-            border-radius: 1.5rem;
-            transition: all 0.3s ease;
-        }
-
-        .feature-card:hover {
-            transform: translateY(-5px);
-            border-color: rgba(34, 211, 238, 0.4);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
         }
     </style>
 

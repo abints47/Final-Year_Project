@@ -21,6 +21,9 @@ try {
         email_address VARCHAR(100) NOT NULL UNIQUE,
         password VARCHAR(255) NOT NULL,
         role VARCHAR(50) DEFAULT 'student',
+        profile_photo VARCHAR(255) DEFAULT 'https://api.dicebear.com/7.x/avataaars/svg?seed=default',
+        gender VARCHAR(20) DEFAULT NULL,
+        address TEXT DEFAULT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )");
     echo "Table 'users' recreated.\n";
@@ -39,6 +42,7 @@ try {
         lessons INT DEFAULT 0,
         image VARCHAR(255),
         youtube_id VARCHAR(50),
+        video_path VARCHAR(255),
         summary TEXT,
         full_summary TEXT,
         what_you_learn JSON,

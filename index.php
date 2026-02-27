@@ -8,6 +8,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $full_name = trim($_POST['full_name']);
     $email = trim($_POST['email']);
     $pass = $_POST['password'];
+    $role = $_POST['role'] ?? 'student';
 
     if (empty($full_name) || empty($email) || empty($pass)) {
         $error = "All fields are required.";
@@ -20,13 +21,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $error = "This email is already registered.";
             } else {
                 $stmt = $pdo->prepare("INSERT INTO users (full_name, email_address, password, role) VALUES (?, ?, ?, ?)");
-                $stmt->execute([$full_name, $email, $pass, 'student']);
+                $stmt->execute([$full_name, $email, $pass, $role]);
 
                 $_SESSION['user_id'] = $email;
                 $_SESSION['user_name'] = $full_name;
                 $_SESSION['user_email'] = $email;
+                $_SESSION['user_role'] = $role;
 
-                header("Location: dashboard.php");
+                if ($role === 'teacher') {
+                    header("Location: teacher_dashboard.php");
+                } else {
+                    header("Location: dashboard.php");
+                }
                 exit();
             }
         } catch (PDOException $e) {
@@ -45,61 +51,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
         rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #020617;
-            color: #f8fafc;
-            overflow-x: hidden;
-            -webkit-font-smoothing: antialiased;
-        }
-
-        .glass {
-            background: rgba(15, 23, 42, 0.6);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-        }
-
-        .gradient-cyan {
-            background: linear-gradient(to right, #22d3ee, #0ea5e9);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .gradient-purple {
-            background: linear-gradient(to right, #c084fc, #818cf8);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .gradient-btn {
-            background: linear-gradient(to right, #22d3ee, #c084fc);
-        }
-
-        .aura {
-            position: absolute;
-            border-radius: 50%;
-            filter: blur(120px);
-            opacity: 0.3;
-            z-index: -1;
-            pointer-events: none;
-        }
-
-        .input-field {
-            transition: all 0.3s ease;
-        }
-
-        .input-field:focus {
-            box-shadow: 0 0 0 4px rgba(34, 211, 238, 0.2);
-            border-color: #22d3ee;
-        }
-    </style>
-
+    <link rel="stylesheet" href="assets/css/style.css">
 </head>
 
-<body class="min-h-screen flex flex-col overflow-x-hidden selection:bg-indigo-500/30 bg-[#020617]">
-    <!-- Background Decor (Clipped) -->
+<body class="min-h-screen flex flex-col selection:bg-indigo-500/30">
+    <!-- Background Decor -->
     <div class="fixed inset-0 overflow-hidden pointer-events-none z-0">
         <div class="aura bg-cyan-600 w-[500px] h-[500px] top-0 left-0 -translate-x-1/2 -translate-y-1/2 opacity-20">
         </div>
@@ -110,7 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <?php include 'components/navbar.php'; ?>
 
     <main
-        class="flex-1 w-full max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-center px-6 py-20 gap-16">
+        class="flex-1 w-full max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-center px-6 py-20 gap-16 relative z-10">
 
         <!-- Hero Text -->
         <div class="flex-1 text-center lg:text-left pt-10 lg:pt-0">
@@ -133,7 +89,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <div class="flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start">
                 <a href="dashboard.php"
-                    class="gradient-btn px-8 py-4 rounded-2xl text-white font-bold text-lg shadow-xl shadow-cyan-500/20 hover:opacity-90 active:scale-[0.98] transition-all flex items-center gap-2">
+                    class="bg-gradient-to-r from-cyan-400 to-blue-600 px-8 py-4 rounded-2xl text-white font-bold text-lg shadow-xl shadow-cyan-500/20 hover:opacity-90 active:scale-[0.98] transition-all flex items-center gap-2">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
@@ -166,11 +122,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="text-center mb-8">
                     <span
                         class="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-400 mb-2 block">Registration</span>
-                    <h2 class="text-2xl font-bold text-white">Join as a <span class="text-indigo-400">Student</span>
-                    </h2>
-                    <p class="text-slate-500 text-sm mt-1">Start your learning journey for free.</p>
+                    <h2 id="card-title" class="text-2xl font-bold text-white">Join as a <span
+                            class="text-indigo-400">Student</span></h2>
+                    <p id="card-desc" class="text-slate-500 text-sm mt-1">Start your learning journey for free.</p>
                 </div>
+
                 <form action="index.php" method="POST" class="space-y-5">
+                    <div class="relative group">
+                        <label class="text-xs font-bold text-slate-500 mb-2 block ml-1">I am a...</label>
+                        <select name="role" id="role-selector"
+                            class="w-full bg-[#0f172a] border border-white/10 rounded-2xl px-5 py-4 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50 appearance-none cursor-pointer">
+                            <option value="student">Student</option>
+                            <option value="teacher">Teacher</option>
+                        </select>
+                        <div class="absolute right-5 bottom-4 pointer-events-none text-slate-500">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </div>
+                    </div>
+
                     <div>
                         <input name="full_name" type="text" required placeholder="Full Name"
                             class="input-field w-full bg-[#0f172a] border border-white/10 rounded-2xl px-5 py-4 text-white placeholder:text-slate-600 focus:outline-none" />
@@ -184,24 +156,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             class="input-field w-full bg-[#0f172a] border border-white/10 rounded-2xl px-5 py-4 text-white placeholder:text-slate-600 focus:outline-none" />
                     </div>
 
-                    <button type="submit"
+                    <button type="submit" id="submit-btn"
                         class="w-full bg-white hover:bg-slate-200 text-black py-4 rounded-2xl font-bold text-lg shadow-xl transition-all active:scale-[0.98] mt-2">
                         Get Started
                     </button>
                 </form>
 
                 <div class="mt-8 pt-8 border-t border-white/5 text-center">
-                    <p class="text-slate-500 text-xs mb-4 uppercase font-black tracking-widest">Other Roles</p>
-                    <div class="flex items-center justify-center gap-4">
-                        <a href="signup_teacher.php"
-                            class="text-emerald-400 font-bold text-sm hover:text-emerald-300 transition-colors">Teacher</a>
-                        <span class="w-1 h-1 bg-white/10 rounded-full"></span>
-                        <a href="signup_admin.php"
-                            class="text-rose-400 font-bold text-sm hover:text-rose-300 transition-colors">Admin</a>
-                    </div>
-                </div>
-
-                <div class="mt-6 text-center">
                     <p class="text-slate-400 text-sm">
                         Have an account?
                         <a href="login.php" class="text-white font-bold hover:underline transition-colors">Sign in</a>
@@ -213,8 +174,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <?php include 'components/footer.php'; ?>
 
+    <script>
+        const roleSelector = document.getElementById('role-selector');
+        const cardTitle = document.getElementById('card-title');
+        const cardDesc = document.getElementById('card-desc');
+        const submitBtn = document.getElementById('submit-btn');
 
-    <script type="module" src="assets/js/main.js"></script>
+        roleSelector.addEventListener('change', (e) => {
+            const role = e.target.value;
+            if (role === 'teacher') {
+                cardTitle.innerHTML = 'Join as a <span class="text-emerald-400">Teacher</span>';
+                cardDesc.innerText = 'Empower students by sharing your expertise.';
+                submitBtn.innerText = 'Create Teacher Account';
+                submitBtn.className = 'w-full bg-emerald-500 hover:bg-emerald-600 text-white py-4 rounded-2xl font-bold text-lg shadow-xl shadow-emerald-500/20 transition-all active:scale-[0.98] mt-2';
+            } else {
+                cardTitle.innerHTML = 'Join as a <span class="text-indigo-400">Student</span>';
+                cardDesc.innerText = 'Start your learning journey for free.';
+                submitBtn.innerText = 'Get Started';
+                submitBtn.className = 'w-full bg-white hover:bg-slate-200 text-black py-4 rounded-2xl font-bold text-lg shadow-xl transition-all active:scale-[0.98] mt-2';
+            }
+        });
+    </script>
 </body>
 
 </html>

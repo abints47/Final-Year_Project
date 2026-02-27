@@ -130,7 +130,8 @@
           <p class="text-white font-black text-xl tracking-tight"><?php echo htmlspecialchars($_SESSION['user_name']); ?>
           </p>
           <p class="text-indigo-400 font-bold text-xs uppercase tracking-widest">
-            <?php echo htmlspecialchars($_SESSION['user_role'] ?? 'Member'); ?></p>
+            <?php echo htmlspecialchars($_SESSION['user_role'] ?? 'Member'); ?>
+          </p>
         </div>
       </div>
     <?php endif; ?>

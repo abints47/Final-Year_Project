@@ -28,19 +28,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $allowed_exts = ['jpg', 'jpeg', 'png', 'webp'];
             if (in_array($file_ext, $allowed_exts)) {
                 $new_file_name = md5(time() . $file_name) . '.' . $file_ext;
-                $upload_dir = 'uploads/profile_photos/';
-
+                $upload_dir = __DIR__ . '/uploads/profile_photos/';
                 if (!is_dir($upload_dir)) {
                     mkdir($upload_dir, 0777, true);
                 }
 
                 $upload_path = $upload_dir . $new_file_name;
+                $db_save_path = 'uploads/profile_photos/' . $new_file_name;
 
                 if (move_uploaded_file($file_tmp, $upload_path)) {
                     $update_fields[] = "profile_photo = ?";
-                    $params[] = $upload_path;
-                    $_SESSION['user_photo'] = $upload_path;
+                    $params[] = $db_save_path;
+                    $_SESSION['user_photo'] = $db_save_path;
+                } else {
+                    throw new Exception("Failed to move uploaded file.");
                 }
+            } else {
+                throw new Exception("Invalid file extension. Allowed: jpg, jpeg, png, webp.");
             }
         }
 

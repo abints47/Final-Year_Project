@@ -12,6 +12,13 @@ try {
     $stmt = $pdo->prepare("SELECT * FROM users WHERE email_address = ?");
     $stmt->execute([$_SESSION['user_email']]);
     $user = $stmt->fetch();
+
+    // CRITICAL: If user not found (e.g. after DB reset), clear session and redirect
+    if (!$user) {
+        session_destroy();
+        header("Location: index.php");
+        exit();
+    }
 } catch (PDOException $e) {
     die("Error fetching user data: " . $e->getMessage());
 }
@@ -26,36 +33,8 @@ try {
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
         rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/style.css">
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #020617;
-            color: #f8fafc;
-            overflow-x: hidden;
-            -webkit-font-smoothing: antialiased;
-        }
-
-        .glass {
-            background: rgba(15, 23, 42, 0.6);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-        }
-
-        .gradient-cyan {
-            background: linear-gradient(to right, #22d3ee, #0ea5e9);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .aura {
-            position: absolute;
-            border-radius: 50%;
-            filter: blur(120px);
-            opacity: 0.2;
-            z-index: -1;
-            pointer-events: none;
-        }
-
         #edit-modal.hidden {
             display: none;
         }
@@ -131,7 +110,7 @@ try {
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                             </svg>
-                            <span class="capitalize"><?php echo htmlspecialchars($user['gender']); ?></span>
+                            <span class="capitalize"><?php echo htmlspecialchars($user['gender'] ?? ''); ?></span>
                         </div>
                     <?php endif; ?>
                     <?php if (!empty($user['address'])): ?>
@@ -143,7 +122,7 @@ try {
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                             </svg>
-                            <span class="truncate"><?php echo htmlspecialchars($user['address']); ?></span>
+                            <span class="truncate"><?php echo htmlspecialchars($user['address'] ?? ''); ?></span>
                         </div>
                     <?php endif; ?>
                 </div>
@@ -201,7 +180,8 @@ try {
                             <div class="flex items-center gap-3">
                                 <span class="w-2 h-2 rounded-full bg-cyan-400"></span>
                                 <p class="text-white font-bold text-lg capitalize">
-                                    <?php echo htmlspecialchars($user['gender'] ?: 'Not specified'); ?></p>
+                                    <?php echo htmlspecialchars(($user['gender'] ?? '') ?: 'Not specified'); ?>
+                                </p>
                             </div>
                         </div>
 
@@ -220,7 +200,8 @@ try {
                             <p class="text-slate-500 text-[10px] font-black uppercase tracking-[0.2em] mb-3">Primary
                                 Address</p>
                             <p class="text-white font-bold leading-relaxed">
-                                <?php echo nl2br(htmlspecialchars($user['address'] ?: 'No address provided')); ?></p>
+                                <?php echo nl2br(htmlspecialchars(($user['address'] ?? '') ?: 'No address provided')); ?>
+                            </p>
                         </div>
                     </div>
                 </div>

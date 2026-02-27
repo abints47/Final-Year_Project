@@ -8,12 +8,13 @@ try {
 
     // Decode JSON fields for each course
     foreach ($all_courses as &$course) {
-        if (isset($course['what_you_learn'])) {
-            $course['what_you_learn'] = json_decode($course['what_you_learn'], true);
-        }
-        if (isset($course['resources'])) {
-            $course['resources'] = json_decode($course['resources'], true);
-        }
+        $course['what_you_learn'] = !empty($course['what_you_learn']) ? json_decode($course['what_you_learn'], true) : [];
+        if (!is_array($course['what_you_learn']))
+            $course['what_you_learn'] = [];
+
+        $course['resources'] = !empty($course['resources']) ? json_decode($course['resources'], true) : [];
+        if (!is_array($course['resources']))
+            $course['resources'] = [];
     }
 } catch (PDOException $e) {
     $all_courses = [];

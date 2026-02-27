@@ -29,43 +29,13 @@ $filtered_courses = array_filter($all_courses, function ($course) use ($search, 
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
         rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/style.css">
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #020617;
-            color: #f8fafc;
-            overflow-x: hidden;
-            -webkit-font-smoothing: antialiased;
-        }
-
-        .glass {
-            background: rgba(15, 23, 42, 0.6);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-        }
-
         .gradient-courses {
             background: linear-gradient(to right, #22d3ee, #818cf8);
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
-        }
-
-        .course-card {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .course-card:hover {
-            transform: translateY(-5px);
-            border-color: rgba(34, 211, 238, 0.3);
-        }
-
-        .aura {
-            position: absolute;
-            border-radius: 50%;
-            filter: blur(120px);
-            opacity: 0.2;
-            z-index: -1;
-            pointer-events: none;
         }
     </style>
 </head>
@@ -177,7 +147,8 @@ $filtered_courses = array_filter($all_courses, function ($course) use ($search, 
                         class="course-card glass rounded-[2.5rem] overflow-hidden flex flex-col group h-full">
                         <!-- Image Area -->
                         <div class="h-56 relative overflow-hidden">
-                            <img src="<?php echo $course['image']; ?>" alt="<?php echo $course['title']; ?>"
+                            <?php $course_img = !empty($course['image']) ? $course['image'] : 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&q=80&w=800'; ?>
+                            <img src="<?php echo $course_img; ?>" alt="<?php echo $course['title']; ?>"
                                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                             <div
                                 class="absolute inset-0 bg-gradient-to-t from-[#020617] via-transparent to-transparent opacity-60">
