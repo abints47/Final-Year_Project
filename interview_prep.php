@@ -7,6 +7,29 @@ if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit();
 }
+
+$user_id = $_SESSION['user_id'];
+$analysis_result = null;
+$error_message = "";
+
+// Resume analysis handling has been moved to resume_analyzer.php
+// Redirect if legacy POST attempt
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['resume'])) {
+    header("Location: resume_analyzer.php");
+    exit();
+}
+
+// Fetch existing analysis if requested
+if (isset($_GET['analysis_id'])) {
+    $stmt = $pdo->prepare("SELECT * FROM resume_analysis WHERE id = ? AND user_id = ?");
+    $stmt->execute([$_GET['analysis_id'], $user_id]);
+    $analysis_result = $stmt->fetch();
+} else {
+    // Fetch latest analysis
+    $stmt = $pdo->prepare("SELECT * FROM resume_analysis WHERE user_id = ? ORDER BY created_at DESC LIMIT 1");
+    $stmt->execute([$user_id]);
+    $analysis_result = $stmt->fetch();
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -72,19 +95,52 @@ if (!isset($_SESSION['user_id'])) {
         <!-- Header Section -->
         <div class="text-center mb-12 md:mb-16">
             <div
-                class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-yellow-500/10 border border-yellow-500/20 text-yellow-500 text-[10px] md:text-xs font-bold mb-6">
+                class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-[10px] md:text-xs font-bold mb-6">
                 <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                     <path
                         d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
                 </svg>
-                Sharpen Your Thinking
+                AI-Powered Career Readiness
             </div>
             <h1 class="text-4xl md:text-7xl font-black text-white mb-6 tracking-tight">
-                Interview <span class="gradient-cyan">Aptitude</span>
+                Smart Career <span class="gradient-cyan">Accelerator</span>
             </h1>
             <p class="text-base md:text-lg text-slate-400 max-w-2xl mx-auto leading-relaxed">
-                Master logical reasoning, quantitative analysis, and verbal skills to ace your technical interviews.
+                Connect your skills with opportunities using high-impact AI resume analysis and specialized interview
+                prep gems.
             </p>
+        </div>
+
+        <!-- Smart Resume Analyzer Entry -->
+        <div class="mb-20">
+            <div
+                class="glass p-12 rounded-[3rem] border border-white/5 bg-gradient-to-br from-cyan-500/10 to-transparent relative overflow-hidden group">
+                <div class="flex flex-col md:flex-row items-center justify-between gap-10 relative z-10">
+                    <div class="max-w-xl text-center md:text-left">
+                        <div
+                            class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-[10px] font-black uppercase tracking-widest mb-6">
+                            AI FEATURE
+                        </div>
+                        <h2 class="text-3xl md:text-4xl font-black text-white mb-4">Smart Resume Analysis</h2>
+                        <p class="text-slate-400 text-lg leading-relaxed">
+                            Get personalized interview questions and a professional summary based on your resume. Level
+                            up your prep with AI insights.
+                        </p>
+                    </div>
+                    <a href="resume_analyzer.php"
+                        class="bg-white text-black px-10 py-5 rounded-2xl font-black text-lg transition-all hover:scale-105 active:scale-95 shadow-2xl shadow-cyan-500/10 flex items-center gap-3">
+                        Launch Analyzer
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                    </a>
+                </div>
+                <!-- Background visual -->
+                <div
+                    class="absolute -right-20 -bottom-20 w-80 h-80 bg-cyan-500/10 blur-[100px] rounded-full group-hover:bg-cyan-500/20 transition-all">
+                </div>
+            </div>
         </div>
 
         <!-- Categories Grid -->

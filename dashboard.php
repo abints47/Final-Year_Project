@@ -1,5 +1,4 @@
 <?php
-
 session_start();
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
@@ -8,371 +7,379 @@ if (!isset($_SESSION['user_id'])) {
 
 require_once 'includes/db.php';
 require_once 'includes/courses_data.php';
+
+// Fetch user's enrollments
+$enrolled_courses = [];
+try {
+    $stmt = $pdo->prepare("SELECT c.*, e.status, e.progress, e.enrolled_at 
+                           FROM enrollments e 
+                           JOIN courses c ON e.course_id = c.id 
+                           WHERE e.user_id = ?");
+    $stmt->execute([$_SESSION['user_id']]);
+    $enrolled_courses = $stmt->fetchAll();
+} catch (PDOException $e) {
+    $enrolled_courses = [];
+}
+
+$not_enrolled_courses = array_filter($all_courses, function ($course) use ($enrolled_courses) {
+    foreach ($enrolled_courses as $enrolled) {
+        if ($enrolled['id'] == $course['id'])
+            return false;
+    }
+    return true;
+});
 ?>
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="en" class="dark scroll-smooth">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Openly</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="assets/css/style.css">
     <style>
-        /* Specific page styles can remain if not reused */
-        .section-header {
-            text-align: center;
-            margin-bottom: 4rem;
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #020617;
+            color: #f8fafc;
         }
 
-        .section-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.5rem 1rem;
-            background: rgba(34, 211, 238, 0.1);
-            border: 1px solid rgba(34, 211, 238, 0.2);
-            border-radius: 9999px;
-            color: #22d3ee;
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin-bottom: 1.5rem;
+        .glass {
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
-        .section-title {
-            font-size: 2.5rem;
-            font-weight: 900;
-            color: white;
-            margin-bottom: 1rem;
-            letter-spacing: -0.025em;
+        .gradient-text {
+            background: linear-gradient(135deg, #22d3ee 0%, #a855f7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
-        .section-description {
-            color: #94a3b8;
-            max-width: 32rem;
-            margin: 0 auto;
+        .aura {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(120px);
+            opacity: 0.15;
+            z-index: -1;
+            pointer-events: none;
         }
 
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(1, minmax(0, 1fr));
-            gap: 1.5rem;
+        .course-card {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        @media (min-width: 768px) {
-            .features-grid {
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-            }
+        .course-card:hover {
+            transform: translateY(-8px);
+            border-color: #22d3ee;
+            box-shadow: 0 20px 40px -20px rgba(34, 211, 238, 0.3);
         }
 
-        @media (min-width: 1024px) {
-            .features-grid {
-                grid-template-columns: repeat(3, minmax(0, 1fr));
-            }
-        }
-
-        .feature-icon {
-            width: 3rem;
-            height: 3rem;
-            background: linear-gradient(135deg, rgba(34, 211, 238, 0.1), rgba(192, 132, 252, 0.1));
+        /* Floating Chat Button */
+        .chat-float {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 3.5rem;
+            height: 3.5rem;
+            background: #6366f1;
             border-radius: 1rem;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #22d3ee;
-            margin-bottom: 1.5rem;
-            border: 1px solid rgba(34, 211, 238, 0.2);
-        }
-
-        .feature-title {
-            font-size: 1.25rem;
-            font-weight: 700;
             color: white;
-            margin-bottom: 0.75rem;
+            box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.5);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 50;
         }
 
-        .feature-description {
-            color: #94a3b8;
-            font-size: 0.875rem;
-            line-height: 1.6;
+        .chat-float:hover {
+            transform: scale(1.1) rotate(5deg);
         }
     </style>
-
-
 </head>
 
-<body class="min-h-screen flex flex-col bg-[#020617] selection:bg-indigo-500/30">
+<body class="min-h-screen pt-24 pb-20 overflow-x-hidden">
+    <!-- Dynamic Auras -->
+    <div class="aura bg-cyan-600 w-[600px] h-[600px] -top-96 -left-96"></div>
+    <div class="aura bg-purple-600 w-[600px] h-[600px] bottom-0 -right-96"></div>
+
     <?php include 'components/navbar.php'; ?>
 
-    <div
-        class="fixed top-0 left-0 w-full h-[600px] bg-cyan-600/10 blur-[120px] rounded-full pointer-events-none -translate-y-1/2 z-0">
-    </div>
-    <div
-        class="fixed bottom-0 right-0 w-full h-[600px] bg-purple-600/10 blur-[120px] rounded-full pointer-events-none translate-y-1/2 z-0">
-    </div>
+    <main class="max-w-7xl mx-auto px-6">
 
-    <main class="max-w-7xl mx-auto px-6 pt-32 pb-20 relative z-10">
-        <!-- Header Section -->
-        <div class="flex flex-col md:flex-row justify-between items-center md:items-end mb-16 animate-in text-center md:text-left"
-            style="animation-delay: 0.1s">
-            <div>
-                <span class="text-xs font-bold text-cyan-400 uppercase tracking-widest mb-2 block">Overview</span>
-                <h1 class="text-3xl md:text-6xl font-black text-white tracking-tight">
-                    Welcome back, <span class="gradient-cyan">
-                        <?php echo htmlspecialchars(explode(' ', $_SESSION['user_name'])[0]); ?>!
-                    </span>
+        <!-- Welcome Row (Top Header) -->
+        <div class="flex flex-col lg:flex-row items-center justify-between gap-8 mb-20 animate-in">
+            <div class="text-center lg:text-left">
+                <span class="text-[10px] font-black uppercase text-cyan-400 tracking-widest mb-3 block">Overview</span>
+                <h1 class="text-5xl lg:text-7xl font-black text-white tracking-tight leading-tight">
+                    Welcome back, <span
+                        class="text-cyan-400"><?php echo htmlspecialchars(explode(' ', $_SESSION['user_name'])[0]); ?>!</span>
                 </h1>
-                <p class="text-slate-400 mt-2 font-medium text-sm md:text-base">Continue your learning journey</p>
+                <p class="text-slate-400 text-lg mt-4 font-medium">Continue your learning journey</p>
             </div>
-            <div class="mt-8 md:mt-0 glass px-6 py-4 rounded-2xl flex items-center gap-4 mx-auto md:mx-0">
-                <?php if ($_SESSION['user_role'] === 'teacher'): ?>
-                    <a href="upload_course.php"
-                        class="gradient-btn px-6 py-3 rounded-xl text-white font-bold text-sm shadow-lg shadow-cyan-500/20 hover:opacity-90 transition-all flex items-center gap-2">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
-                        </svg>
-                        Upload Course
-                    </a>
-                <?php else: ?>
-                    <div class="w-10 h-10 bg-green-500/10 rounded-full flex items-center justify-center text-green-400">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-                                d="M13 10V3L4 14h7v7l9-11h-7z" />
-                        </svg>
-                    </div>
-                    <div>
-                        <p class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Current Streak</p>
-                        <p class="text-xl font-black text-white">12 Days</p>
-                    </div>
-                <?php endif; ?>
+
+            <!-- Dashboard Quick Stats Card -->
+            <div class="glass p-8 rounded-[2.5rem] flex items-center gap-6 min-w-[300px] border-white/10 shadow-xl">
+                <div
+                    class="w-14 h-14 bg-emerald-500/10 rounded-2xl flex items-center justify-center text-emerald-400 border border-emerald-500/20">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                            d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                </div>
+                <div>
+                    <p class="text-[10px] text-slate-500 uppercase font-black tracking-widest mb-1">Courses In Progress
+                    </p>
+                    <p class="text-4xl font-black text-white leading-none"><?php echo count($enrolled_courses); ?></p>
+                </div>
             </div>
         </div>
 
-        <!-- Hero Section -->
-        <section class="py-20 animate-in text-center" style="animation-delay: 0.3s">
+        <!-- Master Hero Section (Center Hub) -->
+        <section class="py-24 text-center relative reveal mb-12">
             <div
-                class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-semibold mb-8">
+                class="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-[10px] font-black mb-10 tracking-widest uppercase">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
                 Transform Your Career with Expert-Led Courses
             </div>
-            <h1 class="text-4xl md:text-7xl font-black text-white mb-8 leading-[1.1] tracking-tight">
-                Master <span class="gradient-cyan">Programming</span> & <br class="hidden md:block" />
-                <span class="gradient-purple">AI Skills</span>
+            <h1 class="text-6xl lg:text-8xl font-black text-white mb-10 tracking-tighter leading-[0.9]">
+                Master <span class="text-cyan-400">Programming</span> & <br />
+                <span class="gradient-text">AI Skills</span>
             </h1>
-            <p class="text-base md:text-lg text-slate-400 mb-10 max-w-2xl mx-auto leading-relaxed">
+            <p class="text-slate-400 text-lg md:text-xl max-w-3xl mx-auto leading-relaxed font-medium mb-12">
                 Join thousands of learners mastering Python, Java, Machine Learning, and cutting-edge AI technologies.
                 Learn from industry experts with hands-on projects.
             </p>
 
             <div class="flex flex-col sm:flex-row items-center gap-4 justify-center">
                 <a href="courses.php"
-                    class="gradient-btn px-8 py-4 rounded-2xl text-white font-bold text-lg shadow-xl shadow-cyan-500/20 hover:opacity-90 active:scale-[0.98] transition-all flex items-center gap-2">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
+                    class="bg-cyan-500 text-[#020617] px-8 py-4 rounded-2xl font-black text-lg shadow-xl shadow-cyan-500/20 hover:opacity-90 active:scale-95 transition-all flex items-center gap-2">
                     Explore Courses
                 </a>
-                <a href="#features"
-                    class="glass px-8 py-4 rounded-2xl text-white font-bold text-lg hover:bg-white/10 active:scale-[0.98] transition-all flex items-center gap-2">
-                    <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    Learn More
+                <a href="resume_analyzer.php"
+                    class="glass px-8 py-4 rounded-2xl text-white font-bold text-lg hover:bg-white/10 active:scale-95 transition-all flex items-center gap-2 border-white/10">
+                    AI Career Analysis
                 </a>
             </div>
         </section>
 
-        <!-- Why Choose Us Section -->
-        <section class="features py-20 animate-in" id="features" style="animation-delay: 0.5s">
-            <div class="section-header">
-                <div class="section-badge">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                        data-lucide="layers" class="lucide lucide-layers">
-                        <path
-                            d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z">
-                        </path>
-                        <path d="M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12"></path>
-                        <path d="M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17"></path>
-                    </svg>
-                    Why Choose Us
-                </div>
-                <h2 class="section-title">Everything You Need to <span class="gradient-text">Succeed</span></h2>
-                <p class="section-description">Our platform offers comprehensive learning tools designed to help you
-                    master new skills effectively.</p>
+        <!-- Precision Tools Section -->
+        <section class="mb-24 reveal">
+            <div class="mb-12">
+                <h2 class="text-4xl font-black text-white mb-4 tracking-tight">Precision Tools</h2>
+                <p class="text-slate-500 font-medium">Architected for clarity, speed, and result-driven outcomes.</p>
             </div>
 
-            <div class="features-grid">
-                <div class="feature-card glass animate-in" style="animation-delay: 0.2s">
-                    <div class="feature-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                            data-lucide="play-circle" class="lucide lucide-play-circle">
-                            <path
-                                d="M9 9.003a1 1 0 0 1 1.517-.859l4.997 2.997a1 1 0 0 1 0 1.718l-4.997 2.997A1 1 0 0 1 9 14.996z">
-                            </path>
-                            <circle cx="12" cy="12" r="10"></circle>
-                        </svg>
-                    </div>
-                    <h3 class="feature-title">HD Video Lessons</h3>
-                    <p class="feature-description">Crystal clear video content with lifetime access</p>
-                </div>
-                <div class="feature-card glass animate-in" style="animation-delay: 0.3s">
-                    <div class="feature-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                            data-lucide="clipboard-check" class="lucide lucide-clipboard-check">
-                            <rect width="8" height="4" x="8" y="2" rx="1" ry="1"></rect>
-                            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
-                            <path d="m9 14 2 2 4-4"></path>
-                        </svg>
-                    </div>
-                    <h3 class="feature-title">Interactive Quizzes</h3>
-                    <p class="feature-description">Test your knowledge with engaging assessments</p>
-                </div>
-                <div class="feature-card glass animate-in" style="animation-delay: 0.4s">
-                    <div class="feature-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                            data-lucide="flame" class="lucide lucide-flame">
-                            <path
-                                d="M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1-14 0 5 5 0 0 1 1-3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4">
-                            </path>
-                        </svg>
-                    </div>
-                    <h3 class="feature-title">Learning Streaks</h3>
-                    <p class="feature-description">Stay motivated with daily learning goals</p>
-                </div>
-                <div class="feature-card glass animate-in" style="animation-delay: 0.5s">
-                    <div class="feature-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                            data-lucide="trophy" class="lucide lucide-trophy">
-                            <path d="M10 14.66v1.626a2 2 0 0 1-.976 1.696A5 5 0 0 0 7 21.978"></path>
-                            <path d="M14 14.66v1.626a2 2 0 0 0 .976 1.696A5 5 0 0 1 17 21.978"></path>
-                            <path d="M18 9h1.5a1 1 0 0 0 0-5H18"></path>
-                            <path d="M4 22h16"></path>
-                            <path d="M6 9a6 6 0 0 0 12 0V3a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1z"></path>
-                            <path d="M6 9H4.5a1 1 0 0 1 0-5H6"></path>
-                        </svg>
-                    </div>
-                    <h3 class="feature-title">Earn Badges</h3>
-                    <p class="feature-description">Unlock achievements as you progress</p>
-                </div>
-                <div class="feature-card glass animate-in" style="animation-delay: 0.6s">
-                    <div class="feature-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                            data-lucide="award" class="lucide lucide-award">
-                            <path
-                                d="m15.477 12.89 1.515 8.526a.5.5 0 0 1-.81.47l-3.58-2.687a1 1 0 0 0-1.197 0l-3.586 2.686a.5.5 0 0 1-.81-.469l1.514-8.526">
-                            </path>
-                            <circle cx="12" cy="8" r="6"></circle>
-                        </svg>
-                    </div>
-                    <h3 class="feature-title">Certificates</h3>
-                    <p class="feature-description">Get certified upon course completion</p>
-                </div>
-                <div class="feature-card glass animate-in" style="animation-delay: 0.7s">
-                    <div class="feature-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                            data-lucide="bar-chart" class="lucide lucide-bar-chart">
-                            <path d="M5 21v-6"></path>
-                            <path d="M12 21V9"></path>
-                            <path d="M19 21V3"></path>
-                        </svg>
-                    </div>
-                    <h3 class="feature-title">Progress Tracking</h3>
-                    <p class="feature-description">Monitor your learning journey in real-time</p>
-                </div>
-            </div>
-        </section> <!-- Course Grid -->
-        <div class="mb-12 animate-in pt-10 pb-20" style="animation-delay: 0.7s">
-            <h2 class="text-2xl font-bold text-white mb-8 flex items-center gap-3">
-                <span class="w-2 h-8 bg-cyan-500 rounded-full"></span>
-                Active Courses
-            </h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <?php foreach ($all_courses as $index => $course):
-                    $badgeColor = 'bg-emerald-500';
-                    if ($course['level'] == 'Intermediate' || $course['level'] == 'Medium')
-                        $badgeColor = 'bg-amber-500';
-                    if ($course['level'] == 'Advanced' || $course['level'] == 'Hard')
-                        $badgeColor = 'bg-rose-500';
-                    ?>
-                    <a href="course_detail.php?id=<?php echo $course['id']; ?>"
-                        class="course-card bg-[#0f172a] border border-white/5 rounded-[2rem] overflow-hidden flex flex-col h-full animate-in group"
-                        style="animation-delay: <?php echo $index * 0.05; ?>s">
-                        <div class="h-44 relative overflow-hidden">
-                            <img src="<?php echo $course['image']; ?>" alt="<?php echo $course['title']; ?>"
-                                class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-                            <div class="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-colors"></div>
-                            <div
-                                class="absolute top-4 left-4 bg-white/10 backdrop-blur-md text-white text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg border border-white/10">
-                                <?php echo $course['category']; ?>
-                            </div>
-                            <div
-                                class="absolute top-4 right-4 <?php echo $badgeColor; ?> text-white text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg shadow-lg">
-                                <?php echo $course['level']; ?>
-                            </div>
+            <div class="grid grid-cols-12 gap-8">
+                <!-- Large Card: ATS Analyzer -->
+                <div
+                    class="col-span-12 lg:col-span-8 glass p-10 rounded-[3rem] relative overflow-hidden group border-white/10 hover:border-cyan-500/50 transition-all flex flex-col md:flex-row gap-10">
+                    <div class="flex-1 relative z-10">
+                        <div
+                            class="w-14 h-14 bg-cyan-500/10 rounded-2xl flex items-center justify-center text-cyan-400 mb-8 border border-cyan-500/20">
+                            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                    d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                            </svg>
                         </div>
-                        <div class="p-6 flex-1 flex flex-col">
-                            <h3
-                                class="text-lg font-bold text-white mb-3 leading-tight group-hover:text-cyan-400 transition-colors">
-                                <?php echo $course['title']; ?>
-                            </h3>
-                            <p class="text-slate-400 text-xs mb-6 flex-1 leading-relaxed line-clamp-3">
-                                <?php echo $course['summary']; ?>
-                            </p>
+                        <h3 class="text-3xl font-black text-white mb-6">AI ATS Analyzer</h3>
+                        <p class="text-slate-400 text-lg leading-relaxed font-medium mb-10 max-w-md">
+                            Proprietary neural matching that reverse-engineers hiring algorithms to position your
+                            profile at the absolute top of the stack.
+                        </p>
+                        <a href="resume_analyzer.php"
+                            class="inline-flex items-center gap-2 text-cyan-400 font-black uppercase text-xs tracking-widest group-hover:gap-4 transition-all">
+                            Explore Analyzer
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                    d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                            </svg>
+                        </a>
+                    </div>
+                    <!-- Decorative Element -->
+                    <div
+                        class="w-full md:w-64 h-48 bg-white/5 rounded-2xl border border-white/5 relative overflow-hidden hidden md:block">
+                        <div class="absolute top-4 left-4 right-4 h-2 bg-white/10 rounded-full"></div>
+                        <div class="absolute top-10 left-4 right-10 h-2 bg-white/5 rounded-full"></div>
+                        <div class="absolute bottom-4 right-4 w-4 h-4 rounded-full bg-cyan-500/20"></div>
+                    </div>
+                </div>
 
-                            <div
-                                class="flex items-center justify-between text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-6 border-t border-white/5 pt-4">
-                                <span class="flex items-center gap-1">
-                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                    <?php echo $course['duration']; ?>
-                                </span>
-                                <span>Video Course</span>
-                            </div>
-
-                            <div class="flex gap-2">
-                                <span
-                                    class="flex-1 gradient-btn text-white py-3 rounded-xl font-bold text-center text-xs transition-all hover:opacity-90 active:scale-95 shadow-lg shadow-cyan-500/20">
-                                    Start Learning
-                                </span>
-                            </div>
+                <!-- Medium Card: Interview IQ -->
+                <div
+                    class="col-span-12 lg:col-span-4 glass p-10 rounded-[3rem] relative overflow-hidden group border-white/10 hover:border-purple-500/50 transition-all flex flex-col justify-between">
+                    <div class="relative z-10">
+                        <div
+                            class="w-14 h-14 bg-purple-500/10 rounded-2xl flex items-center justify-center text-purple-400 mb-8 border border-purple-500/20">
+                            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                    d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                            </svg>
                         </div>
-                    </a>
-                <?php endforeach; ?>
+                        <h3 class="text-3xl font-black text-white mb-6">Interview IQ</h3>
+                        <p class="text-slate-400 text-base leading-relaxed font-medium mb-8">
+                            Real-time biometric and semantic feedback during mock sessions to refine your executive
+                            presence.
+                        </p>
+                        <a href="interview_prep.php"
+                            class="text-white text-sm font-bold opacity-60 group-hover:opacity-100 transition-opacity">Launch
+                            Studio</a>
+                    </div>
+                </div>
+
+                <!-- Smaller Tools Row -->
+                <div
+                    class="col-span-12 lg:col-span-4 glass p-10 rounded-[3rem] border-white/10 hover:border-amber-500/50 transition-all group">
+                    <div
+                        class="w-12 h-12 bg-white/5 rounded-xl flex items-center justify-center text-white mb-8 group-hover:bg-amber-500/10 transition-all group-hover:text-amber-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 20l-5.447-2.724A2 2 0 013 15.487V6.513a2 2 0 011.553-1.943L9 2l5.447 2.724A2 2 0 0116 6.513v8.974a2 2 0 01-1.553 1.943L9 20z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20V12" />
+                        </svg>
+                    </div>
+                    <h4 class="text-xl font-black text-white mb-3">Career Roadmap</h4>
+                    <p class="text-slate-500 text-sm font-medium leading-relaxed">Long-range forecasting for senior
+                        leadership trajectories.</p>
+                </div>
+
+                <div
+                    class="col-span-12 lg:col-span-4 glass p-10 rounded-[3rem] border-white/10 hover:border-emerald-500/50 transition-all group">
+                    <div
+                        class="w-12 h-12 bg-white/5 rounded-xl flex items-center justify-center text-white mb-8 group-hover:bg-emerald-500/10 transition-all group-hover:text-emerald-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16" />
+                        </svg>
+                    </div>
+                    <h4 class="text-xl font-black text-white mb-3">Skill Gap Mapping</h4>
+                    <p class="text-slate-500 text-sm font-medium leading-relaxed">Automated identification of critical
+                        certification pathways.</p>
+                </div>
+
+                <div
+                    class="col-span-12 lg:col-span-4 glass p-10 rounded-[3rem] border-white/10 hover:border-blue-500/50 transition-all group">
+                    <div
+                        class="w-12 h-12 bg-white/5 rounded-xl flex items-center justify-center text-white mb-8 group-hover:bg-blue-500/10 transition-all group-hover:text-blue-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253" />
+                        </svg>
+                    </div>
+                    <h4 class="text-xl font-black text-white mb-3">Course Player</h4>
+                    <p class="text-slate-500 text-sm font-medium leading-relaxed">Immersive learning with AI-generated
+                        dynamic transcripts.</p>
+                </div>
             </div>
+        </section>
+
+        <!-- Course Grid Content -->
+        <div class="space-y-24">
+
+            <!-- Enrolled Section -->
+            <?php if (!empty($enrolled_courses)): ?>
+                <section>
+                    <h2 class="text-2xl font-black text-white mb-8 flex items-center gap-4">
+                        <span class="w-2 h-8 bg-cyan-500 rounded-full"></span>
+                        Your Learning Path
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                        <?php foreach ($enrolled_courses as $course): ?>
+                            <a href="course_player.php?id=<?php echo $course['id']; ?>"
+                                class="course-card glass rounded-[2.5rem] overflow-hidden flex flex-col h-full group">
+                                <div class="h-48 relative overflow-hidden">
+                                    <img src="<?php echo $course['image']; ?>"
+                                        class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                                    <div class="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-all"></div>
+                                    <div
+                                        class="absolute top-4 left-4 glass px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest border-white/20">
+                                        <?php echo $course['category']; ?>
+                                    </div>
+                                </div>
+                                <div class="p-8 flex-1 flex flex-col">
+                                    <h3
+                                        class="text-xl font-black text-white mb-4 group-hover:text-cyan-400 transition-colors leading-tight">
+                                        <?php echo $course['title']; ?>
+                                    </h3>
+                                    <div class="mt-auto">
+                                        <div
+                                            class="flex justify-between text-[10px] font-black text-slate-500 mb-2 uppercase tracking-widest">
+                                            <span>Progress</span>
+                                            <span class="text-cyan-400"><?php echo $course['progress']; ?>%</span>
+                                        </div>
+                                        <div class="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                                            <div class="h-full bg-cyan-500" style="width: <?php echo $course['progress']; ?>%">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        <?php endforeach; ?>
+                    </div>
+                </section>
+            <?php endif; ?>
+
+            <!-- Recommended Section -->
+            <section>
+                <h2 class="text-2xl font-black text-white mb-8 flex items-center gap-4">
+                    <span class="w-2 h-8 bg-purple-500 rounded-full"></span>
+                    Recommended For You
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                    <?php
+                    $rec_courses = !empty($enrolled_courses) ? array_slice($not_enrolled_courses, 0, 4) : array_slice($all_courses, 0, 4);
+                    foreach ($rec_courses as $course): ?>
+                        <a href="course_detail.php?id=<?php echo $course['id']; ?>"
+                            class="course-card glass rounded-[2.5rem] overflow-hidden flex flex-col h-full group">
+                            <div class="h-48 relative overflow-hidden">
+                                <img src="<?php echo $course['image']; ?>"
+                                    class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                                <div class="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-all"></div>
+                                <div
+                                    class="absolute top-4 left-4 glass px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest border-white/20">
+                                    <?php echo $course['category']; ?>
+                                </div>
+                            </div>
+                            <div class="p-8 flex-1 flex flex-col">
+                                <h3
+                                    class="text-xl font-black text-white mb-4 group-hover:text-purple-400 transition-colors leading-tight">
+                                    <?php echo $course['title']; ?>
+                                </h3>
+                                <div
+                                    class="mt-auto pt-6 border-t border-white/5 flex items-center justify-between text-[10px] text-slate-500 font-bold uppercase tracking-widest">
+                                    <span class="flex items-center gap-1">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        <?php echo $course['duration']; ?>
+                                    </span>
+                                    <span class="text-purple-400">View Details</span>
+                                </div>
+                            </div>
+                        </a>
+                    <?php endforeach; ?>
+                </div>
+            </section>
         </div>
-
-
-        <!-- Code Racer Game -->
-        <?php include 'components/game.php'; ?>
-
-
     </main>
 
+    <!-- Floating Chat Button -->
+    <div class="chat-float">
+        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+        </svg>
+    </div>
+
     <?php include 'components/footer.php'; ?>
-
-
-    <script type="module" src="assets/js/main.js"></script>
-    <script src="assets/js/game.js"></script>
 </body>
 
 </html>

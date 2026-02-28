@@ -22,7 +22,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $image = trim($_POST['image']) ?: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&q=80&w=800';
     $video_path = null;
 
-    // Handle Local Video Upload
     if (isset($_FILES['course_video']) && $_FILES['course_video']['error'] === UPLOAD_ERR_OK) {
         $file_tmp = $_FILES['course_video']['tmp_name'];
         $file_name = $_FILES['course_video']['name'];
@@ -44,15 +43,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    // Simple arrays for what you learn and resources
-    $what_you_learn = array_filter(explode("\n", str_replace("\r", "", $_POST['what_you_learn'])));
-    $resources = [
-        ['name' => 'General Documentation', 'url' => 'https://docs.google.com/']
-    ];
+    if (isset($_FILES['course_image']) && $_FILES['course_image']['error'] === UPLOAD_ERR_OK) {
+        $img_tmp = $_FILES['course_image']['tmp_name'];
+        $img_name = $_FILES['course_image']['name'];
+        $img_ext = strtolower(pathinfo($img_name, PATHINFO_EXTENSION));
+        $allowed_img_exts = ['jpg', 'jpeg', 'png', 'webp'];
+
+        if (in_array($img_ext, $allowed_img_exts)) {
+            $new_img_name = md5(time() . $img_name) . '.' . $img_ext;
+            $img_upload_dir = 'uploads/thumbnails/';
+            if (!is_dir($img_upload_dir))
+                mkdir($img_upload_dir, 0777, true);
+
+            $img_target_path = $img_upload_dir . $new_img_name;
+            if (move_uploaded_file($img_tmp, $img_target_path)) {
+                $image = $img_target_path;
+            }
+        }
+    }
+
+    $what_you_learn = array_filter(explode("\n", str_replace("\r", "", $_POST['what_you_learn'] ?? '')));
+    $resources = [['name' => 'General Documentation', 'url' => 'https://docs.google.com/']];
 
     if (empty($title) || empty($summary)) {
         $error = "Title and Summary are required.";
-    } elseif (!$error) { // Only proceed if no upload error
+    } elseif (!$error) {
         try {
             $stmt = $pdo->prepare("INSERT INTO courses (title, author, category, level, duration, lessons, image, youtube_id, video_path, summary, full_summary, what_you_learn, resources, uploaded_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
             $stmt->execute([
@@ -79,53 +94,98 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark scroll-smooth">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Upload Course - Openly</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="assets/css/style.css">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #020617;
+            color: #f8fafc;
+        }
+
+        .glass {
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .aura {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(120px);
+            opacity: 0.1;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .input-field {
+            width: 100%;
+            background: #030712;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 1rem;
+            padding: 1.25rem 1.5rem;
+            color: white;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: #22d3ee;
+            box-shadow: 0 0 20px rgba(34, 211, 238, 0.1);
+        }
+
+        .input-field::placeholder {
+            color: #475569;
+        }
+    </style>
 </head>
 
-<body class="min-h-screen flex flex-col pt-24 pb-12">
+<body class="min-h-screen pt-32 pb-20">
+    <!-- Static Auras -->
+    <div class="aura bg-cyan-600 w-[600px] h-[600px] -top-96 -left-96"></div>
+    <div class="aura bg-purple-600 w-[600px] h-[600px] bottom-0 -right-96"></div>
+
     <?php include 'components/navbar.php'; ?>
 
-    <main class="max-w-3xl mx-auto px-6 w-full">
-        <div class="mb-8">
-            <h1 class="text-4xl font-black text-white tracking-tight">Upload New Course</h1>
-            <p class="text-slate-400 mt-2">Share your knowledge with the Openly community.</p>
+    <main class="max-w-4xl mx-auto px-6">
+        <div class="mb-12">
+            <h1 class="text-5xl font-black text-white tracking-tight mb-4">Upload New Course</h1>
+            <p class="text-slate-400 text-lg font-medium">Share your knowledge with the Openly community.</p>
         </div>
 
-        <?php if ($error): ?>
-            <div class="mb-6 p-4 bg-red-500/10 border border-red-500/20 text-red-200 text-sm rounded-2xl text-center">
-                <?php echo $error; ?>
-            </div>
-        <?php endif; ?>
-        <?php if ($success): ?>
+        <?php if ($error || $success): ?>
             <div
-                class="mb-6 p-4 bg-emerald-500/10 border border-emerald-500/20 text-emerald-200 text-sm rounded-2xl text-center">
-                <?php echo $success; ?>
+                class="mb-8 p-6 rounded-3xl text-center font-bold border <?php echo $error ? 'bg-red-500/10 border-red-500/20 text-red-200' : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-200'; ?>">
+                <?php echo $error ?: $success; ?>
             </div>
         <?php endif; ?>
 
-        <div class="glass p-8 rounded-[2rem] shadow-2xl">
-            <form action="upload_course.php" method="POST" enctype="multipart/form-data" class="space-y-6">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="md:col-span-2">
-                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 px-1">Course
-                            Title</label>
-                        <input name="title" type="text" required placeholder="e.g. Master Python for Data Science"
-                            class="input-field" />
-                    </div>
+        <div class="glass p-12 rounded-[3.5rem] shadow-2xl border-white/10">
+            <form action="upload_course.php" method="POST" enctype="multipart/form-data" class="space-y-10">
+                <!-- Course Title -->
+                <div>
+                    <label
+                        class="block text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-4 ml-1">Course
+                        Title</label>
+                    <input name="title" type="text" required placeholder="e.g. Master Python for Data Science"
+                        class="input-field" />
+                </div>
 
+                <!-- Row: Category & Difficulty -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div>
                         <label
-                            class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 px-1">Category</label>
-                        <select name="category" class="input-field">
+                            class="block text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-4 ml-1">Category</label>
+                        <select name="category" class="input-field appearance-none cursor-pointer">
                             <option value="Programming">Programming</option>
                             <option value="Web Dev">Web Development</option>
                             <option value="AI/ML">AI & Machine Learning</option>
@@ -135,74 +195,92 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <option value="Mobile Dev">Mobile Development</option>
                         </select>
                     </div>
-
                     <div>
                         <label
-                            class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 px-1">Difficulty
+                            class="block text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-4 ml-1">Difficulty
                             Level</label>
-                        <select name="level" class="input-field">
+                        <select name="level" class="input-field appearance-none cursor-pointer">
                             <option value="Beginner">Beginner</option>
                             <option value="Intermediate">Intermediate</option>
                             <option value="Advanced">Advanced</option>
                         </select>
                     </div>
+                </div>
 
+                <!-- Row: Duration & Lessons -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div>
                         <label
-                            class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 px-1">Duration
+                            class="block text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-4 ml-1">Duration
                             (e.g. 4h 30m)</label>
                         <input name="duration" type="text" required placeholder="4h 30m" class="input-field" />
                     </div>
-
                     <div>
                         <label
-                            class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 px-1">Lessons
+                            class="block text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-4 ml-1">Lessons
                             Count</label>
                         <input name="lessons" type="number" required placeholder="12" class="input-field" />
                     </div>
+                </div>
 
-                    <div class="md:col-span-2">
+                <!-- Thumbnail Upload -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-4 ml-1">Thumbnail URL (Optional)</label>
+                        <input name="image" type="text" placeholder="https://images.unsplash.com/..." class="input-field" />
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-4 ml-1">OR Upload Thumbnail Image</label>
+                        <input name="course_image" type="file" accept="image/*" class="input-field cursor-pointer file:mr-4 file:py-1 file:px-4 file:rounded-xl file:border-0 file:text-[10px] file:font-black file:bg-cyan-500/20 file:text-cyan-400 hover:file:bg-cyan-500/30 transition-all" />
+                    </div>
+                </div>
+
+                <!-- Row: Video Upload & YouTube -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
                         <label
-                            class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 px-1">Thumbnail
-                            Image URL (Optional)</label>
-                        <input name="image" type="text" placeholder="https://images.unsplash.com/..."
-                            class="input-field" />
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 px-1">Upload
+                            class="block text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-4 ml-1">Upload
                             Local Video (MP4/WebM)</label>
-                        <input name="course_video" type="file" accept="video/mp4,video/webm"
-                            class="input-field cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-black file:bg-white/5 file:text-cyan-400 hover:file:bg-white/10" />
+                        <div class="relative group">
+                            <input name="course_video" type="file" accept="video/mp4,video/webm"
+                                class="input-field cursor-pointer file:mr-4 file:py-1 file:px-4 file:rounded-xl file:border-0 file:text-[10px] file:font-black file:bg-cyan-500/20 file:text-cyan-400 hover:file:bg-cyan-500/30 transition-all" />
+                        </div>
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 px-1">OR
+                        <label
+                            class="block text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-4 ml-1">OR
                             YouTube Video ID</label>
                         <input name="youtube_id" type="text" placeholder="dQw4w9WgXcQ" class="input-field" />
                     </div>
                 </div>
 
+                <!-- Short Summary -->
                 <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 px-1">Short
+                    <label
+                        class="block text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-4 ml-1">Short
                         Summary</label>
-                    <textarea name="summary" required rows="2" class="input-field"></textarea>
+                    <textarea name="summary" required rows="2" class="input-field"
+                        placeholder="Briefly describe what this course is about..."></textarea>
                 </div>
 
+                <!-- Full Description -->
                 <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 px-1">Full
+                    <label class="block text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-4 ml-1">Full
                         Description</label>
-                    <textarea name="full_summary" rows="4" class="input-field"></textarea>
+                    <textarea name="full_summary" rows="4" class="input-field"
+                        placeholder="Detail the curriculum, requirements, and objectives..."></textarea>
                 </div>
 
+                <!-- What You Learn -->
                 <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 px-1">What
+                    <label class="block text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-4 ml-1">What
                         students will learn (One per line)</label>
                     <textarea name="what_you_learn" rows="4" class="input-field"
                         placeholder="Dynamic UI components&#10;State Management&#10;API Integration"></textarea>
                 </div>
 
                 <button type="submit"
-                    class="w-full gradient-btn text-white py-4 rounded-2xl font-bold transition-all hover:opacity-90 active:scale-95 shadow-xl shadow-cyan-500/20">
+                    class="w-full bg-cyan-400 hover:bg-cyan-300 text-[#020617] py-6 rounded-2xl font-black text-xl transition-all shadow-xl shadow-cyan-400/20 active:scale-95 uppercase tracking-tighter">
                     Publish Course
                 </button>
             </form>

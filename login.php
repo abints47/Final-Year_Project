@@ -12,12 +12,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = "Please fill in all fields.";
     } else {
         try {
-            $stmt = $pdo->prepare("SELECT full_name, email_address, role, profile_photo FROM users WHERE email_address = ? AND password = ?");
+            $stmt = $pdo->prepare("SELECT id, full_name, email_address, role, profile_photo FROM users WHERE email_address = ? AND password = ?");
             $stmt->execute([$email, $pass]);
             $user = $stmt->fetch();
 
             if ($user) {
-                $_SESSION['user_id'] = $user['email_address'];
+                $_SESSION['user_id'] = $user['id'];
                 $_SESSION['user_name'] = $user['full_name'];
                 $_SESSION['user_email'] = $user['email_address'];
                 $_SESSION['user_role'] = $user['role'];
@@ -118,7 +118,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         class="absolute bottom-0 w-full h-1/2 bg-gradient-to-t from-indigo-900/10 to-transparent pointer-events-none z-[-1]">
     </div>
 
-    <?php include 'components/footer.php'; ?>
 
     <script type="module" src="assets/js/main.js"></script>
 </body>

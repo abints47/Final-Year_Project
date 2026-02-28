@@ -1,93 +1,116 @@
-<nav class="fixed top-0 left-0 right-0 z-50 bg-[#020617]/80 backdrop-blur-xl border-b border-white/5 py-4">
-  <div class="max-w-7xl mx-auto px-6 flex items-center justify-between">
+<?php
+// Hide navbar on landing and login pages if user is not authenticated
+$current_page = basename($_SERVER['PHP_SELF']);
+if (!isset($_SESSION['user_id']) && ($current_page === 'index.php' || $current_page === 'login.php')) {
+    return;
+}
+?>
+<nav id="main-navbar" class="fixed top-6 left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-7xl">
+  <div
+    class="glass rounded-[2rem] px-8 py-4 flex items-center justify-between border border-white/10 shadow-xl relative overflow-hidden group/nav">
+
     <!-- Logo -->
-    <div class="flex items-center gap-2 cursor-pointer group" onclick="window.location.href='index.php'">
+    <div class="flex items-center gap-3 cursor-pointer group/logo relative z-10"
+      onclick="window.location.href='index.php'">
       <div
-        class="w-10 h-10 bg-gradient-to-br from-cyan-400 to-blue-600 rounded-xl flex items-center justify-center transition-transform group-hover:scale-105 shadow-lg shadow-cyan-500/20">
-        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        class="w-11 h-11 bg-gradient-to-br from-cyan-400 to-blue-600 rounded-2xl flex items-center justify-center transition-all shadow-lg shadow-cyan-500/20 relative">
+        <svg class="w-6 h-6 text-white relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
             d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
         </svg>
       </div>
-      <span class="text-2xl font-bold tracking-tight">
-        <span class="text-white">Open</span><span
-          class="bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">ly</span>
+      <span class="text-2xl font-black tracking-tighter">
+        <span class="text-white">Open</span><span class="text-cyan-400">ly</span>
       </span>
     </div>
 
-    <!-- Centered Links -->
-    <div class="hidden md:flex items-center gap-10 absolute left-1/2 -translate-x-1/2">
-      <a href="<?php
+    <!-- Desktop Links -->
+    <div class="hidden md:flex items-center gap-1">
+      <?php
+      $home_url = 'index.php';
       if (isset($_SESSION['user_role'])) {
         if ($_SESSION['user_role'] === 'admin')
-          echo 'admin_panel.php';
-        elseif ($_SESSION['user_role'] === 'teacher')
-          echo 'teacher_dashboard.php';
+          $home_url = 'admin_panel.php';
+        else if ($_SESSION['user_role'] === 'teacher')
+          $home_url = 'teacher_dashboard.php';
         else
-          echo 'dashboard.php';
-      } else {
-        echo 'index.php';
+          $home_url = 'dashboard.php';
       }
-      ?>" class="text-sm font-medium text-slate-300 hover:text-white transition-colors">Home</a>
-      <a href="courses.php" class="text-sm font-medium text-slate-300 hover:text-white transition-colors">Courses</a>
-      <?php if (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin'): ?>
-        <a href="admin_panel.php" class="text-sm font-bold text-rose-400 hover:text-rose-300 transition-colors">Admin
-          Panel</a>
-      <?php elseif (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'teacher'): ?>
-        <a href="teacher_dashboard.php"
-          class="text-sm font-bold text-emerald-400 hover:text-emerald-300 transition-colors">Dashboard</a>
+
+      $nav_links = [
+        ['name' => 'Home', 'url' => $home_url],
+        ['name' => 'Courses', 'url' => 'courses.php'],
+        ['name' => 'Interview Prep', 'url' => 'interview_prep.php'],
+        ['name' => 'Profile', 'url' => 'profile.php'],
+        ['name' => 'Contact', 'url' => 'contact.php'],
+      ];
+      foreach ($nav_links as $link):
+        ?>
+        <a href="<?php echo $link['url']; ?>"
+          class="nav-link px-5 py-2 text-sm font-bold text-slate-400 hover:text-white transition-all relative">
+          <?php echo $link['name']; ?>
+        </a>
+      <?php endforeach; ?>
+
+      <?php if (isset($_SESSION['user_role'])): ?>
+        <div class="w-px h-5 bg-white/10 mx-4"></div>
+        <?php if ($_SESSION['user_role'] === 'admin'): ?>
+          <a href="admin_panel.php"
+            class="px-5 py-2 text-sm font-black text-rose-500 hover:text-rose-400 transition-all">ADMIN</a>
+        <?php elseif ($_SESSION['user_role'] === 'teacher'): ?>
+          <a href="teacher_dashboard.php"
+            class="px-5 py-2 text-sm font-black text-emerald-500 hover:text-emerald-400 transition-all uppercase tracking-widest">Teacher
+            Panel</a>
+        <?php endif; ?>
       <?php endif; ?>
-      <a href="interview_prep.php"
-        class="text-sm font-medium text-slate-300 hover:text-white transition-colors">Interview Prep</a>
-      <a href="profile.php" class="text-sm font-medium text-slate-300 hover:text-white transition-colors">Profile</a>
-      <a href="contact.php" class="text-sm font-medium text-slate-300 hover:text-white transition-colors">Contact</a>
     </div>
 
-    <!-- Right Side (Auth/Profile) -->
-    <div class="flex items-center gap-3">
+    <!-- Right Side -->
+    <div class="flex items-center gap-6">
       <?php if (isset($_SESSION['user_name'])): ?>
-        <div class="flex items-center gap-4 cursor-pointer group" onclick="window.location.href='profile.php'">
-          <div class="text-right hidden sm:block leading-tight">
-            <p class="text-white font-bold text-sm tracking-tight"><?php echo htmlspecialchars($_SESSION['user_name']); ?>
-            </p>
-            <p class="text-[#818cf8] font-black text-[10px] uppercase tracking-widest">
-              <?php echo htmlspecialchars($_SESSION['user_role'] ?? 'Member'); ?>
-            </p>
+        <div class="flex items-center gap-6">
+          <div class="flex items-center gap-4 cursor-pointer group/profile" onclick="window.location.href='profile.php'">
+            <div class="text-right hidden sm:block">
+              <p class="text-white font-black text-sm tracking-tight leading-none">
+                <?php echo htmlspecialchars($_SESSION['user_name']); ?>
+              </p>
+              <p class="text-cyan-400 font-bold text-[9px] uppercase tracking-[0.2em] mt-1.5">
+                <?php echo htmlspecialchars($_SESSION['user_role'] ?? 'Explorer'); ?>
+              </p>
+            </div>
+            <div
+              class="w-10 h-10 rounded-2xl overflow-hidden border border-white/10 p-0.5 bg-white/5 transition-all group-hover/profile:border-cyan-500/50">
+              <img
+                src="<?php echo !empty($_SESSION['user_photo']) ? htmlspecialchars($_SESSION['user_photo']) : 'https://api.dicebear.com/7.x/avataaars/svg?seed=' . urlencode($_SESSION['user_name']); ?>"
+                alt="Profile" class="w-full h-full object-cover rounded-[0.9rem]" />
+            </div>
           </div>
-          <div
-            class="w-10 h-10 rounded-xl overflow-hidden border border-white/10 bg-[#0f172a] transition-transform group-hover:scale-105">
-            <?php if (!empty($_SESSION['user_photo'])): ?>
-              <img src="<?php echo htmlspecialchars($_SESSION['user_photo']); ?>" alt="Profile"
-                class="w-full h-full object-cover" />
-            <?php else: ?>
-              <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=<?php echo urlencode($_SESSION['user_name']); ?>"
-                alt="Profile" class="w-full h-full" />
-            <?php endif; ?>
-          </div>
+          <div class="w-px h-5 bg-white/10 hidden sm:block"></div>
+          <a href="logout.php" class="hidden sm:flex items-center gap-2 text-rose-500 hover:text-rose-400 transition-colors text-sm font-bold group/logout">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+            <span>Logout</span>
+          </a>
         </div>
-        <div class="w-px h-8 bg-white/10 mx-2 hidden md:block"></div>
-        <a href="logout.php" class="text-sm font-bold text-slate-400 hover:text-white transition-colors hidden md:block">
-          Logout
-        </a>
       <?php else: ?>
-        <a href="login.php"
-          class="text-sm font-bold text-slate-300 hover:text-white transition-colors hidden sm:block">Sign In</a>
-        <a href="index.php"
-          class="bg-gradient-to-r from-cyan-400 to-purple-500 text-white px-6 py-2.5 rounded-xl text-sm font-bold transition-all hover:opacity-90 active:scale-95 shadow-lg shadow-cyan-500/20 hidden sm:block">
-          Join Now
-        </a>
+        <div class="hidden sm:flex items-center gap-6">
+          <a href="login.php" class="text-sm font-bold text-slate-400 hover:text-white transition-all">Sign In</a>
+          <a href="index.php"
+            class="bg-white text-[#020617] px-7 py-3 rounded-[1.2rem] text-sm font-black transition-all hover:bg-cyan-400 hover:scale-105 active:scale-95 shadow-xl shadow-cyan-500/10">Join
+            Now</a>
+        </div>
       <?php endif; ?>
 
-      <!-- Mobile Menu Button -->
+      <!-- Mobile Button -->
       <button id="mobile-menu-button"
-        class="md:hidden w-10 h-10 flex flex-col items-center justify-center gap-1.5 relative z-50 transition-all active:scale-95 group">
-        <span id="bar-1" class="w-6 h-0.5 bg-slate-300 rounded-full transition-all duration-300 origin-center"></span>
-        <span id="bar-2" class="w-6 h-0.5 bg-slate-300 rounded-full transition-all duration-300"></span>
-        <span id="bar-3" class="w-6 h-0.5 bg-slate-300 rounded-full transition-all duration-300 origin-center"></span>
+        class="md:hidden w-12 h-12 flex flex-col items-center justify-center gap-1.5 relative z-50 bg-white/5 rounded-2xl border border-white/5 active:scale-90 transition-all">
+        <span id="bar-1" class="w-6 h-0.5 bg-cyan-400 rounded-full transition-all duration-300"></span>
+        <span id="bar-2" class="w-4 h-0.5 bg-white rounded-full transition-all duration-300 ml-auto"></span>
+        <span id="bar-3" class="w-6 h-0.5 bg-purple-400 rounded-full transition-all duration-300"></span>
       </button>
     </div>
   </div>
-
 </nav>
 
 <!-- Mobile Menu Overlay -->
@@ -137,18 +160,7 @@
     <?php endif; ?>
 
     <div class="space-y-4">
-      <a href="<?php
-      if (isset($_SESSION['user_role'])) {
-        if ($_SESSION['user_role'] === 'admin')
-          echo 'admin_panel.php';
-        elseif ($_SESSION['user_role'] === 'teacher')
-          echo 'teacher_dashboard.php';
-        else
-          echo 'dashboard.php';
-      } else {
-        echo 'index.php';
-      }
-      ?>"
+      <a href="<?php echo $home_url; ?>"
         class="menu-item flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/5 active:bg-white/10 transition-all font-bold"
         style="--i: 1">
         <div class="flex items-center gap-4">

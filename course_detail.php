@@ -49,6 +49,16 @@ function get_yt_id($url)
     return $url; // Return as-is if no match (already an ID)
 }
 $yt_id = get_yt_id($course['youtube_id']);
+
+// Check enrollment status
+$is_enrolled = false;
+try {
+    $stmt = $pdo->prepare("SELECT id FROM enrollments WHERE user_id = ? AND course_id = ?");
+    $stmt->execute([$_SESSION['user_id'], $course_id]);
+    $is_enrolled = (bool) $stmt->fetch();
+} catch (PDOException $e) {
+    $is_enrolled = false;
+}
 ?>
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth">
@@ -192,10 +202,19 @@ $yt_id = get_yt_id($course['youtube_id']);
                                 <span class="text-4xl font-black text-white">Free</span>
                                 <span class="text-slate-500 line-through text-lg">$99.99</span>
                             </div>
-                            <button
-                                class="w-full py-4 bg-white text-black font-black rounded-2xl text-lg transition-all hover:bg-slate-200 active:scale-[98%] shadow-xl shadow-cyan-500/10">
-                                Enroll Now
-                            </button>
+
+                            <?php if ($is_enrolled): ?>
+                                <button onclick="window.location.href='course_player.php?id=<?php echo $course_id; ?>'"
+                                    class="w-full py-4 bg-gradient-to-r from-emerald-400 to-teal-500 text-white font-black rounded-2xl text-lg transition-all active:scale-[98%] shadow-xl shadow-emerald-500/20">
+                                    Continue Learning
+                                </button>
+                            <?php else: ?>
+                                <button id="enrollBtn" onclick="enrollCourse(<?php echo $course_id; ?>)"
+                                    class="w-full py-4 bg-white text-black font-black rounded-2xl text-lg transition-all hover:bg-slate-200 active:scale-[98%] shadow-xl shadow-cyan-500/10">
+                                    Enroll Now
+                                </button>
+                            <?php endif; ?>
+
                             <p class="text-[10px] text-center text-slate-500 font-bold uppercase tracking-widest">30-Day
                                 Money Back Guarantee</p>
                         </div>
@@ -414,6 +433,42 @@ $yt_id = get_yt_id($course['youtube_id']);
     </main>
 
     <?php include 'components/footer.php'; ?>
+
+    <script>
+        async function enrollCourse(courseId) {
+            const btn = document.getElementById('enrollBtn');
+            const originalText = btn.innerHTML;
+
+            btn.disabled = true;
+            btn.innerHTML = '<div class="w-5 h-5 border-2 border-black/30 border-t-black rounded-full animate-spin mx-auto"></div>';
+
+            try {
+                const formData = new FormData();
+                formData.append('course_id', courseId);
+
+                const response = await fetch('api/enroll.php', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Refresh to show "Continue Learning"
+                    window.location.reload();
+                } else {
+                    alert(data.error || 'Enrollment failed');
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
+                }
+            } catch (err) {
+                console.error(err);
+                alert('An error occurred. Please try again.');
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        }
+    </script>
 </body>
 
 </html>
