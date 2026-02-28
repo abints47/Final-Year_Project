@@ -33,9 +33,9 @@ The platform uses dynamic prompting to ensure high-quality outputs:
 
 | Layer          | Technology                          |
 | :------------- | :---------------------------------- |
-| **Frontend** | React.js / Next.js                  |
+| **Frontend** | PHP / React.js                   |
 | **Backend** | Python (FastAPI / Flask)            |
-| **Database** | PostgreSQL / MongoDB                |
+| **Database** | MYSQL               |
 | **AI Engine** | Google Gemini API                   |
 | **PDF Parsing**| PyMuPDF / pdfminer.six              |
 
@@ -69,3 +69,4 @@ The platform uses dynamic prompting to ensure high-quality outputs:
 ## 📈 Future Enhancements
 * **AI Mock Interviews:** Real-time voice-to-text mock interview sessions.
 * **Skill Gap Analysis:** Suggesting specific platform courses based on missing keywords in your resume.
+5. close the application 
