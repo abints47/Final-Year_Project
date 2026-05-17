@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once 'includes/db.php';
+require_once 'includes/utils.php';
 
 $error = '';
 
@@ -10,28 +11,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (empty($email) || empty($pass)) {
         $error = "Please fill in all fields.";
+    } elseif (!is_email_valid($email)) {
+        $error = "Please enter a valid email address.";
     } else {
         try {
-            $stmt = $pdo->prepare("SELECT id, full_name, email_address, role, profile_photo FROM users WHERE email_address = ? AND password = ?");
+            $stmt = $pdo->prepare("SELECT id, full_name, email_address, role, profile_photo, status FROM users WHERE email_address = ? AND password = ?");
             $stmt->execute([$email, $pass]);
             $user = $stmt->fetch();
 
             if ($user) {
-                $_SESSION['user_id'] = $user['id'];
-                $_SESSION['user_name'] = $user['full_name'];
-                $_SESSION['user_email'] = $user['email_address'];
-                $_SESSION['user_role'] = $user['role'];
-                $_SESSION['user_photo'] = $user['profile_photo'];
-
-                // Redirect based on role
-                if ($user['role'] === 'admin') {
-                    header("Location: admin_panel.php");
-                } elseif ($user['role'] === 'teacher') {
-                    header("Location: teacher_dashboard.php");
+                if ($user['role'] === 'teacher' && $user['status'] !== 'approved') {
+                    $error = "Your account is currently " . $user['status'] . ". Please wait for admin approval.";
                 } else {
-                    header("Location: dashboard.php");
+                    $_SESSION['user_id'] = $user['id'];
+                    $_SESSION['user_name'] = $user['full_name'];
+                    $_SESSION['user_email'] = $user['email_address'];
+                    $_SESSION['user_role'] = $user['role'];
+                    $_SESSION['user_photo'] = $user['profile_photo'];
+
+                    // Redirect based on role
+                    if ($user['role'] === 'admin') {
+                        header("Location: admin_panel.php");
+                    } elseif ($user['role'] === 'teacher') {
+                        header("Location: teacher_dashboard.php");
+                    } else {
+                        header("Location: dashboard.php");
+                    }
+                    exit();
                 }
-                exit();
             } else {
                 $error = "Invalid credentials.";
             }
@@ -82,6 +89,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <p class="text-slate-400 text-sm">Enter your credentials to continue.</p>
             </div>
 
+            <?php if (isset($_GET['msg'])): ?>
+                <div
+                    class="mb-6 p-4 bg-emerald-500/10 border border-emerald-500/20 text-emerald-200 text-sm rounded-2xl text-center">
+                    <?php echo htmlspecialchars($_GET['msg']); ?>
+                </div>
+            <?php endif; ?>
+
             <?php if ($error): ?>
                 <div class="mb-6 p-4 bg-red-500/10 border border-red-500/20 text-red-200 text-sm rounded-2xl text-center">
                     <?php echo htmlspecialchars($error); ?>
@@ -104,6 +118,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </button>
             </form>
 
+            <div class="mt-6 flex flex-col gap-4">
+                <div class="relative">
+                    <div class="absolute inset-0 flex items-center">
+                        <div class="w-full border-t border-white/10"></div>
+                    </div>
+                    <div class="relative flex justify-center text-xs uppercase">
+                        <span class="bg-[#0f172a] px-4 text-slate-500 font-bold tracking-widest">Or continue with</span>
+                    </div>
+                </div>
+
+                <!-- Google Sign-In Button Container -->
+                <div id="g_id_onload"
+                    data-client_id="862597476920-ntmq8rsak24e5ar8v2ig3ljgdklviskl.apps.googleusercontent.com"
+                    data-context="signin" data-ux_mode="popup" data-callback="handleCredentialResponse"
+                    data-auto_prompt="false">
+                </div>
+
+                <div class="g_id_signin w-full" data-type="standard" data-shape="rectangular" data-theme="outline"
+                    data-text="signin_with" data-size="large" data-logo_alignment="left" data-width="400">
+                </div>
+            </div>
+
             <div class="mt-8 pt-8 border-t border-white/5 text-center">
                 <p class="text-slate-400 text-sm">
                     Don't have an account?
@@ -119,6 +155,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 
 
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script>
+        function handleCredentialResponse(response) {
+            // Send the ID token to your server for verification
+            const id_token = response.credential;
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', 'api/google_auth.php');
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            xhr.onload = function() {
+                try {
+                    const res = JSON.parse(xhr.responseText);
+                    if (res.success) {
+                        window.location.href = res.redirect;
+                    } else {
+                        alert('Authentication failed: ' + res.message);
+                    }
+                } catch (e) {
+                    console.error('Server error response:', xhr.responseText);
+                    alert('A server error occurred during verification. Check the console for details.');
+                }
+            };
+            xhr.onerror = function() {
+                alert('Connection error occurred while verifying the login.');
+            };
+            xhr.send('id_token=' + id_token);
+        }
+    </script>
     <script type="module" src="assets/js/main.js"></script>
 </body>
 

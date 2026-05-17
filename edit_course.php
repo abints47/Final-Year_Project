@@ -27,7 +27,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $level = trim($_POST['level']);
     $duration = trim($_POST['duration']);
     $lessons = (int) $_POST['lessons'];
-    $youtube_id = trim($_POST['youtube_id']);
+    $youtube_playlist_raw = trim($_POST['youtube_playlist'] ?? $_POST['youtube_id'] ?? '');
+
+    // Parse the playlist
+    $playlist_videos = [];
+    if (!empty($youtube_playlist_raw)) {
+        $lines = explode("\n", str_replace("\r", "", $youtube_playlist_raw));
+        foreach ($lines as $line) {
+            $line = trim($line);
+            if (!empty($line)) {
+                $playlist_videos[] = $line;
+            }
+        }
+    }
+    
+    $youtube_id = !empty($playlist_videos) ? $playlist_videos[0] : '';
+    $playlist_json = !empty($playlist_videos) ? json_encode($playlist_videos) : null;
+    
+    // Auto-calculate lessons if multiple videos are provided
+    if (count($playlist_videos) > 1 && $lessons < count($playlist_videos)) {
+        $lessons = count($playlist_videos);
+    }
+    
     $summary = trim($_POST['summary']);
     $full_summary = trim($_POST['full_summary']);
     $image = trim($_POST['image']) ?: $course['image'];
@@ -76,7 +97,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = "Title and Summary are required.";
     } else {
         try {
-            $stmt = $pdo->prepare("UPDATE courses SET title = ?, category = ?, level = ?, duration = ?, lessons = ?, image = ?, youtube_id = ?, video_path = ?, summary = ?, full_summary = ?, what_you_learn = ? WHERE id = ?");
+            $stmt = $pdo->prepare("UPDATE courses SET title = ?, category = ?, level = ?, duration = ?, lessons = ?, image = ?, youtube_id = ?, video_path = ?, summary = ?, full_summary = ?, what_you_learn = ?, playlist_videos = ? WHERE id = ?");
             $stmt->execute([
                 $title,
                 $category,
@@ -89,6 +110,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $summary,
                 $full_summary,
                 json_encode($what_you_learn),
+                $playlist_json,
                 $course_id
             ]);
             $success = "Course updated successfully!";
@@ -248,9 +270,8 @@ if ($course['what_you_learn']) {
                     <div>
                         <label
                             class="block text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-4 ml-1">OR
-                            Update YouTube ID</label>
-                        <input name="youtube_id" type="text"
-                            value="<?php echo htmlspecialchars($course['youtube_id']); ?>" class="input-field" />
+                            Update YouTube URLs (One per line for Playlist)</label>
+                        <textarea name="youtube_playlist" rows="4" class="input-field"><?php echo htmlspecialchars(!empty($course['playlist_videos']) ? implode("\n", json_decode($course['playlist_videos'], true) ?: [$course['youtube_id']]) : $course['youtube_id']); ?></textarea>
                     </div>
                 </div>
                 <div>

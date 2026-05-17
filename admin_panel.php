@@ -26,6 +26,41 @@ if (isset($_GET['delete_course'])) {
     }
 }
 
+// Handle User deletion
+if (isset($_GET['delete_user'])) {
+    $user_id = (int) $_GET['delete_user'];
+    try {
+        $stmt = $pdo->prepare("DELETE FROM users WHERE id = ?");
+        $stmt->execute([$user_id]);
+        $success = "User deleted successfully.";
+        header("Location: admin_panel.php?success=" . urlencode($success));
+        exit();
+    } catch (PDOException $e) {
+        $error = "Failed to delete user: " . $e->getMessage();
+    }
+}
+
+// Handle Teacher Approval Actions
+if (isset($_GET['action']) && isset($_GET['teacher_id'])) {
+    $action = $_GET['action'];
+    $teacher_id = (int) $_GET['teacher_id'];
+    $new_status = ($action === 'approve') ? 'approved' : 'rejected';
+
+    try {
+        $stmt = $pdo->prepare("UPDATE users SET status = ? WHERE id = ? AND role = 'teacher'");
+        $stmt->execute([$new_status, $teacher_id]);
+        $success = "Teacher account " . $new_status . " successfully.";
+        header("Location: admin_panel.php?success=" . urlencode($success));
+        exit();
+    } catch (PDOException $e) {
+        $error = "Action failed: " . $e->getMessage();
+    }
+}
+
+// Fetch Pending Teachers
+$stmt = $pdo->query("SELECT * FROM users WHERE role = 'teacher' AND status = 'pending' ORDER BY created_at DESC");
+$pending_teachers = $stmt->fetchAll();
+
 // Fetch all users
 $stmt = $pdo->query("SELECT * FROM users ORDER BY created_at DESC");
 $all_users = $stmt->fetchAll();
@@ -96,6 +131,70 @@ $all_users = $stmt->fetchAll();
             </div>
         <?php endif; ?>
 
+        <!-- Teacher Approval Requests -->
+        <div class="glass p-8 rounded-[2.5rem] shadow-2xl overflow-hidden mb-8 border border-emerald-500/20">
+            <h2 class="text-xl font-bold text-white mb-6 flex items-center gap-2">
+                <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Pending Teacher Requests
+            </h2>
+            <?php if (empty($pending_teachers)): ?>
+                <p class="text-slate-500 text-sm font-medium italic">No pending requests at the moment.</p>
+            <?php else: ?>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr
+                                class="text-slate-500 text-[10px] font-black uppercase tracking-widest border-b border-white/10">
+                                <th class="pb-4 px-4">Instructor</th>
+                                <th class="pb-4 px-4">Requested On</th>
+                                <th class="pb-4 px-4">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-sm">
+                            <?php foreach ($pending_teachers as $teacher): ?>
+                                <tr class="table-row">
+                                    <td class="py-4 px-4">
+                                        <div class="flex items-center gap-3">
+                                            <div
+                                                class="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 font-bold text-xs">
+                                                <?php echo strtoupper(substr($teacher['full_name'], 0, 1)); ?>
+                                            </div>
+                                            <div>
+                                                <p class="text-white font-bold">
+                                                    <?php echo htmlspecialchars($teacher['full_name']); ?>
+                                                </p>
+                                                <p class="text-slate-500 text-xs">
+                                                    <?php echo htmlspecialchars($teacher['email_address']); ?>
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="py-4 px-4 text-slate-400 text-xs">
+                                        <?php echo date('M j, Y', strtotime($teacher['created_at'])); ?>
+                                    </td>
+                                    <td class="py-4 px-4">
+                                        <div class="flex gap-2">
+                                            <a href="admin_panel.php?action=approve&teacher_id=<?php echo $teacher['id']; ?>"
+                                                class="px-4 py-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-[10px] font-black uppercase rounded-xl border border-emerald-500/20 transition-all">
+                                                Approve
+                                            </a>
+                                            <a href="admin_panel.php?action=reject&teacher_id=<?php echo $teacher['id']; ?>"
+                                                class="px-4 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-[10px] font-black uppercase rounded-xl border border-rose-500/20 transition-all">
+                                                Reject
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            <?php endif; ?>
+        </div>
+
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <!-- User Management -->
             <div class="lg:col-span-2 glass p-8 rounded-[2.5rem] shadow-2xl overflow-hidden">
@@ -114,6 +213,7 @@ $all_users = $stmt->fetchAll();
                                 <th class="pb-4 px-4">User</th>
                                 <th class="pb-4 px-4">Role</th>
                                 <th class="pb-4 px-4">Joined</th>
+                                <th class="pb-4 px-4 text-right">Action</th>
                             </tr>
                         </thead>
                         <tbody class="text-sm">
@@ -142,6 +242,19 @@ $all_users = $stmt->fetchAll();
                                     </td>
                                     <td class="py-4 px-4 text-slate-400 text-xs">
                                         <?php echo date('M j, Y', strtotime($user['created_at'])); ?>
+                                    </td>
+                                    <td class="py-4 px-4 text-right">
+                                        <?php if ($user['id'] != $_SESSION['user_id']): ?>
+                                            <a href="admin_panel.php?delete_user=<?php echo $user['id']; ?>"
+                                                onclick="return confirm('Are you sure you want to delete this user completely? This action cannot be undone.')"
+                                                class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 transition-all opacity-70 hover:opacity-100"
+                                                title="Delete User">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
+                                            </a>
+                                        <?php endif; ?>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>

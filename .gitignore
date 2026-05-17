@@ -22,3 +22,18 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# API Keys and Secrets
+.env
+scripts/.env
+includes/config.php
+
+# User Uploads
+uploads/course_videos/*
+uploads/resumes/*
+uploads/profile_photos/*
+uploads/thumbnails/*
+!uploads/course_videos/.gitkeep
+!uploads/resumes/.gitkeep
+!uploads/profile_photos/.gitkeep
+!uploads/thumbnails/.gitkeep

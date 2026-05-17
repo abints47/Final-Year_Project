@@ -11,15 +11,40 @@ $error = '';
 $success = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $title = trim($_POST['title']);
-    $category = trim($_POST['category']);
-    $level = trim($_POST['level']);
-    $duration = trim($_POST['duration']);
-    $lessons = (int) $_POST['lessons'];
-    $youtube_id = trim($_POST['youtube_id']);
-    $summary = trim($_POST['summary']);
-    $full_summary = trim($_POST['full_summary']);
-    $image = trim($_POST['image']) ?: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&q=80&w=800';
+    if (empty($_POST) && isset($_SERVER['CONTENT_LENGTH']) && $_SERVER['CONTENT_LENGTH'] > 0) {
+        $error = "The uploaded file exceeds the server's maximum allowed size. Please upload a smaller file or use YouTube links.";
+    }
+
+    $title = trim($_POST['title'] ?? '');
+    $category = trim($_POST['category'] ?? '');
+    $level = trim($_POST['level'] ?? '');
+    $duration = trim($_POST['duration'] ?? '');
+    $lessons = (int) ($_POST['lessons'] ?? 0);
+    $youtube_playlist_raw = trim($_POST['youtube_playlist'] ?? $_POST['youtube_id'] ?? '');
+
+    // Parse the playlist
+    $playlist_videos = [];
+    if (!empty($youtube_playlist_raw)) {
+        $lines = explode("\n", str_replace("\r", "", $youtube_playlist_raw));
+        foreach ($lines as $line) {
+            $line = trim($line);
+            if (!empty($line)) {
+                $playlist_videos[] = $line;
+            }
+        }
+    }
+
+    $youtube_id = !empty($playlist_videos) ? $playlist_videos[0] : '';
+    $playlist_json = !empty($playlist_videos) ? json_encode($playlist_videos) : null;
+
+    // Auto-calculate lessons if multiple videos are provided
+    if (count($playlist_videos) > 1 && $lessons < count($playlist_videos)) {
+        $lessons = count($playlist_videos);
+    }
+
+    $summary = trim($_POST['summary'] ?? '');
+    $full_summary = trim($_POST['full_summary'] ?? '');
+    $image = trim($_POST['image'] ?? '') ?: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&q=80&w=800';
     $video_path = null;
 
     if (isset($_FILES['course_video']) && $_FILES['course_video']['error'] === UPLOAD_ERR_OK) {
@@ -65,11 +90,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $what_you_learn = array_filter(explode("\n", str_replace("\r", "", $_POST['what_you_learn'] ?? '')));
     $resources = [['name' => 'General Documentation', 'url' => 'https://docs.google.com/']];
 
-    if (empty($title) || empty($summary)) {
+    if ($error) {
+        // Do nothing, error is already set (e.g. from exceed post maximum size)
+    } elseif (empty($title) || empty($summary)) {
         $error = "Title and Summary are required.";
-    } elseif (!$error) {
+    } else {
         try {
-            $stmt = $pdo->prepare("INSERT INTO courses (title, author, category, level, duration, lessons, image, youtube_id, video_path, summary, full_summary, what_you_learn, resources, uploaded_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            $stmt = $pdo->prepare("INSERT INTO courses (title, author, category, level, duration, lessons, image, youtube_id, video_path, summary, full_summary, what_you_learn, resources, uploaded_by, playlist_videos) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
             $stmt->execute([
                 $title,
                 $_SESSION['user_name'],
@@ -84,7 +111,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $full_summary,
                 json_encode($what_you_learn),
                 json_encode($resources),
-                $_SESSION['user_email']
+                $_SESSION['user_email'],
+                $playlist_json
             ]);
             $success = "Course uploaded successfully!";
         } catch (PDOException $e) {
@@ -226,12 +254,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <!-- Thumbnail Upload -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div>
-                        <label class="block text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-4 ml-1">Thumbnail URL (Optional)</label>
-                        <input name="image" type="text" placeholder="https://images.unsplash.com/..." class="input-field" />
+                        <label
+                            class="block text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-4 ml-1">Thumbnail
+                            URL (Optional)</label>
+                        <input name="image" type="text" placeholder="https://images.unsplash.com/..."
+                            class="input-field" />
                     </div>
                     <div>
-                        <label class="block text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-4 ml-1">OR Upload Thumbnail Image</label>
-                        <input name="course_image" type="file" accept="image/*" class="input-field cursor-pointer file:mr-4 file:py-1 file:px-4 file:rounded-xl file:border-0 file:text-[10px] file:font-black file:bg-cyan-500/20 file:text-cyan-400 hover:file:bg-cyan-500/30 transition-all" />
+                        <label
+                            class="block text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-4 ml-1">OR
+                            Upload Thumbnail Image</label>
+                        <input name="course_image" type="file" accept="image/*"
+                            class="input-field cursor-pointer file:mr-4 file:py-1 file:px-4 file:rounded-xl file:border-0 file:text-[10px] file:font-black file:bg-cyan-500/20 file:text-cyan-400 hover:file:bg-cyan-500/30 transition-all" />
                     </div>
                 </div>
 
@@ -249,8 +283,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <div>
                         <label
                             class="block text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-4 ml-1">OR
-                            YouTube Video ID</label>
-                        <input name="youtube_id" type="text" placeholder="dQw4w9WgXcQ" class="input-field" />
+                            YouTube Video IDs (One per line to create Playlist)</label>
+                        <textarea name="youtube_playlist" rows="4" placeholder="dQw4w9WgXcQ&#10;https://youtu.be/..."
+                            class="input-field"></textarea>
                     </div>
                 </div>
 

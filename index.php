@@ -1,6 +1,8 @@
 <?php
 session_start();
 require_once 'includes/db.php';
+require_once 'includes/config.php';
+require_once 'includes/utils.php';
 
 // Fetch stats for the showcase
 $user_count = 0;
@@ -21,6 +23,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (empty($full_name) || empty($email) || empty($pass)) {
         $error = "All fields are required.";
+    } elseif (!is_email_valid($email)) {
+        $error = "Please enter a valid email address (domain not found).";
     } else {
         try {
             $stmt = $pdo->prepare("SELECT email_address FROM users WHERE email_address = ?");
@@ -29,20 +33,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($stmt->fetch()) {
                 $error = "This email is already registered.";
             } else {
-                $stmt = $pdo->prepare("INSERT INTO users (full_name, email_address, password, role) VALUES (?, ?, ?, ?)");
-                $stmt->execute([$full_name, $email, $pass, $role]);
+                $status = ($role === 'teacher') ? 'pending' : 'approved';
 
-                $_SESSION['user_id'] = $pdo->lastInsertId();
-                $_SESSION['user_name'] = $full_name;
-                $_SESSION['user_email'] = $email;
-                $_SESSION['user_role'] = $role;
-
+                // Verify secret key for teachers
                 if ($role === 'teacher') {
-                    header("Location: teacher_dashboard.php");
-                } else {
-                    header("Location: dashboard.php");
+                    $secret_key = $_POST['secret_key'] ?? '';
+                    if ($secret_key !== TEACHER_SECRET_KEY) {
+                        $error = "Invalid Teacher Secret Key.";
+                    }
                 }
-                exit();
+
+                if (!$error) {
+                    $stmt = $pdo->prepare("INSERT INTO users (full_name, email_address, password, role, status) VALUES (?, ?, ?, ?, ?)");
+                    $stmt->execute([$full_name, $email, $pass, $role, $status]);
+
+                    $_SESSION['user_id'] = $pdo->lastInsertId();
+                    $_SESSION['user_name'] = $full_name;
+                    $_SESSION['user_email'] = $email;
+                    $_SESSION['user_role'] = $role;
+
+                    if ($role === 'teacher') {
+                        // After signup, teachers are redirected to login with a message
+                        session_destroy();
+                        header("Location: login.php?msg=" . urlencode("Registration successful! Waiting for admin approval."));
+                    } else {
+                        header("Location: dashboard.php");
+                    }
+                    exit();
+                }
             }
         } catch (PDOException $e) {
             $error = "Registration error: " . $e->getMessage();
@@ -58,7 +76,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Openly - Master Your Future with AI</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+    <link
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Outfit:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="assets/css/style.css">
     <style>
@@ -117,6 +136,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             left: 0;
             pointer-events: none;
         }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-20px);
+            }
+        }
+
+        .animate-float {
+            animation: float 6s ease-in-out infinite;
+        }
     </style>
 </head>
 
@@ -128,7 +163,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <?php include 'components/navbar.php'; ?>
 
     <!-- Hero & Signup Area -->
-    <header
+    <header id="signup"
         class="relative <?php echo isset($_SESSION['user_id']) ? 'pt-48 items-center' : 'pt-20 items-start'; ?> pb-32 px-6 min-h-[90vh] flex flex-col justify-center">
         <div class="hero-glow"></div>
         <div
@@ -152,10 +187,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </p>
 
                 <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 mb-16">
-                    <button
-                        class="bg-cyan-400 hover:bg-cyan-300 text-[#020617] px-10 py-5 rounded-2xl font-black text-lg transition-all shadow-xl shadow-cyan-400/20">
+                    <a href="#signup"
+                        class="bg-cyan-400 hover:bg-cyan-300 text-[#020617] px-10 py-5 rounded-2xl font-black text-lg transition-all shadow-xl shadow-cyan-400/20 text-center">
                         Start Your Journey Free
-                    </button>
+                    </a>
                     <button
                         class="bg-white/5 hover:bg-white/10 text-white border border-white/10 px-10 py-5 rounded-2xl font-black text-lg transition-all">
                         Watch Tech Demo
@@ -211,6 +246,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             </div>
                         </div>
 
+                        <div id="secret-key-container" class="hidden relative group/key">
+                            <input name="secret_key" id="secret_key" type="password" placeholder="Teacher Secret Key"
+                                class="input-field w-full bg-[#030712] border border-emerald-500/30 rounded-2xl px-6 py-5 pr-14 text-white font-medium placeholder:text-slate-700 focus:outline-none" />
+                            <button type="button" id="toggle-secret"
+                                class="absolute right-5 bottom-5 text-slate-500 hover:text-emerald-400 transition-colors">
+                                <svg id="eye-icon" class="w-5 h-5" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                </svg>
+                            </button>
+                        </div>
+
                         <div>
                             <input name="full_name" type="text" required placeholder="Full Name"
                                 class="input-field w-full bg-[#030712] border border-white/5 rounded-2xl px-6 py-5 text-white font-medium placeholder:text-slate-700 focus:outline-none" />
@@ -219,9 +269,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <input name="email" type="email" required placeholder="Email Address"
                                 class="input-field w-full bg-[#030712] border border-white/5 rounded-2xl px-6 py-5 text-white font-medium placeholder:text-slate-700 focus:outline-none" />
                         </div>
-                        <div>
-                            <input name="password" type="password" required maxlength="10" placeholder="Secret Password"
-                                class="input-field w-full bg-[#030712] border border-white/5 rounded-2xl px-6 py-5 text-white font-medium placeholder:text-slate-700 focus:outline-none" />
+                        <div class="relative group">
+                            <input name="password" id="password" type="password" required maxlength="10"
+                                placeholder="Secret Password"
+                                class="input-field w-full bg-[#030712] border border-white/5 rounded-2xl px-6 py-5 pr-14 text-white font-medium placeholder:text-slate-700 focus:outline-none" />
+                            <button type="button" id="toggle-password"
+                                class="absolute right-5 bottom-5 text-slate-500 hover:text-cyan-400 transition-colors">
+                                <svg id="password-eye-icon" class="w-5 h-5" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                </svg>
+                            </button>
                         </div>
 
                         <button type="submit" id="submit-btn"
@@ -241,6 +302,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
         </div>
     </header>
+
+
 
     <!-- Detailed Feature Showcase -->
     <section id="features" class="py-40 px-6">
@@ -345,6 +408,70 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
     </section>
 
+    <!-- Our Story Section -->
+    <section id="our-story" class="py-40 px-6 relative overflow-hidden bg-white/5">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-16">
+                <div
+                    class="inline-flex items-center gap-3 px-5 py-2.5 rounded-full bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 text-[10px] font-black mb-6 tracking-[0.2em] uppercase">
+                    • The Mission
+                </div>
+                <h2 class="text-4xl md:text-6xl font-black text-white tracking-tight">Our <span
+                        class="text-yellow-400">Story</span></h2>
+            </div>
+
+            <div class="glass p-8 md:p-16 rounded-[4rem] border-white/10 relative overflow-hidden group shadow-2xl">
+                <div class="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-purple-600/5 pointer-events-none">
+                </div>
+
+                <div class="flex flex-col lg:flex-row items-center gap-16 relative z-10">
+                    <!-- Mascot Image -->
+                    <div class="w-full lg:w-1/2 flex justify-center">
+                        <div class="relative">
+                            <div
+                                class="absolute -inset-4 bg-cyan-500/10 blur-3xl rounded-full opacity-50 transition-opacity duration-1000">
+                            </div>
+                            <img src="assets/img/openly_story_mascot.png" alt="Openly Mascot"
+                                class="w-96 md:w-[550px] drop-shadow-[0_20px_50px_rgba(34,211,238,0.3)] animate-float">
+                        </div>
+                    </div>
+
+                    <!-- Story Content -->
+                    <div class="flex-1 space-y-12 text-center lg:text-left relative"
+                        style="font-family: 'Outfit', sans-serif;">
+                        <!-- Decorative Vertical Line -->
+                        <div
+                            class="hidden lg:block absolute -left-12 top-2 bottom-2 w-px bg-gradient-to-b from-transparent via-cyan-500/30 to-transparent">
+                        </div>
+
+                        <p class="text-slate-300 text-2xl md:text-4xl font-light leading-[1.4] tracking-tight">
+                            <span
+                                class="text-white font-bold bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">Openly</span>
+                            is a smart
+                            <span class="text-white border-b-2 border-cyan-500/20 px-1">e-learning</span> and
+                            <span class="text-white border-b-2 border-purple-500/20 px-1">resume analysis</span>
+                            platform designed to revolutionize the way students prepare for their careers. By
+                            integrating
+                            <span class="text-cyan-400 font-semibold">AI-powered tools</span>, the platform provides
+                            personalized learning experiences alongside a specialized resume analyzer that generates
+                            tailored interview questions.
+                        </p>
+
+                        <p class="text-slate-400 text-xl md:text-3xl font-light leading-[1.6] italic">
+                            Born out of a commitment to <span class="text-slate-200">privacy</span> and
+                            <span class="text-slate-200">open-source</span> principles, Openly aims to provide a
+                            sustainable,
+                            <span class="text-white border-b border-white/10 italic">community-backed ecosystem</span>
+                            that helps users bridge the gap between
+                            <span class="text-cyan-400/80 font-medium">education</span> and
+                            <span class="text-purple-400/80 font-medium">employment</span>.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- Final CTA Section -->
     <section class="py-40 px-6">
         <div class="max-w-5xl mx-auto glass p-20 rounded-[4rem] text-center relative overflow-hidden border-white/10">
@@ -355,9 +482,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 professionals using Openly to reach their full potential. The first step to your dream career is just
                 one click away.</p>
             <div class="flex flex-col sm:flex-row items-center justify-center gap-6 relative z-10">
-                <button
-                    class="bg-cyan-400 hover:bg-cyan-300 text-[#020617] px-12 py-5 rounded-2xl font-black text-xl transition-all">Get
-                    Started Now</button>
+                <a href="#signup"
+                    class="bg-cyan-400 hover:bg-cyan-300 text-[#020617] px-12 py-5 rounded-2xl font-black text-xl transition-all text-center">Get
+                    Started Now</a>
                 <button
                     class="bg-white/5 hover:bg-white/10 text-white border border-white/10 px-12 py-5 rounded-2xl font-black text-xl transition-all">Schedule
                     a Consultation</button>
@@ -375,21 +502,56 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         const cardTitle = document.getElementById('card-title');
         const cardDesc = document.getElementById('card-desc');
         const submitBtn = document.getElementById('submit-btn');
+        const secretKeyInput = document.getElementById('secret_key');
+        const keyContainer = document.getElementById('secret-key-container');
 
-        roleSelector.addEventListener('change', (e) => {
-            const role = e.target.value;
+        const updateRoleUI = (role) => {
             if (role === 'teacher') {
                 cardTitle.innerHTML = 'Create <span class="text-emerald-400">Teacher</span> Pass';
                 cardDesc.innerText = 'Empower others by sharing your expert knowledge.';
                 submitBtn.innerText = 'Launch Instructor Path';
                 submitBtn.className = 'w-full bg-emerald-500 hover:bg-emerald-400 text-[#020617] py-5 rounded-2xl font-black text-xl shadow-xl shadow-emerald-500/20 active:scale-95 transition-all mt-4 uppercase tracking-tighter';
+                keyContainer.style.display = 'block';
+                secretKeyInput.setAttribute('required', 'required');
             } else {
                 cardTitle.innerHTML = 'Create <span class="text-cyan-400">Student</span> Pass';
                 cardDesc.innerText = 'Free access to all AI career features.';
                 submitBtn.innerText = 'Begin Journey';
                 submitBtn.className = 'w-full bg-cyan-500 hover:bg-cyan-400 text-[#020617] py-5 rounded-2xl font-black text-xl shadow-xl shadow-cyan-500/20 active:scale-95 transition-all mt-4 uppercase tracking-tighter';
+                keyContainer.style.display = 'none';
+                secretKeyInput.removeAttribute('required');
             }
-        });
+        };
+
+        roleSelector.addEventListener('change', (e) => updateRoleUI(e.target.value));
+
+        // Handle page load state
+        updateRoleUI(roleSelector.value);
+
+        // Toggle Password Fields Visibility
+        const setupToggle = (inputId, btnId, iconId, activeColor) => {
+            const input = document.getElementById(inputId);
+            const btn = document.getElementById(btnId);
+            const icon = document.getElementById(iconId);
+
+            if (btn && input && icon) {
+                btn.addEventListener('click', () => {
+                    const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
+                    input.setAttribute('type', type);
+
+                    if (type === 'text') {
+                        btn.classList.add(activeColor);
+                        icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88L5.99 5.99m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />';
+                    } else {
+                        btn.classList.remove(activeColor);
+                        icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />';
+                    }
+                });
+            }
+        };
+
+        setupToggle('secret_key', 'toggle-secret', 'eye-icon', 'text-emerald-400');
+        setupToggle('password', 'toggle-password', 'password-eye-icon', 'text-cyan-400');
     </script>
 </body>
 
