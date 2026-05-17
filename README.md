@@ -9,6 +9,10 @@ An integrated E-Learning ecosystem that bridges the gap between skill acquisitio
 
 > **⚠️ IMPORTANT NOTE:** Please open the live website in an **Incognito/Private window**. Some browsers (like Chrome) with strict Safe Browsing settings might restrict normal search access to the domain.
 
+ADMIN Email :- Openly@gmail.com
+ADMIN PASS  :- openly2026
+
+TEACHER_SECRET_KEY :- OPENLY_TEACHER_2026
 ---
 
 ## 🚀 Key Features
